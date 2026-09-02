@@ -1,15 +1,38 @@
-const rubles = new Intl.NumberFormat("ru-RU", {
-  style: "currency",
-  currency: "RUB",
-  maximumFractionDigits: 0,
-});
+import type { Currency } from "@/lib/currency";
 
-export function formatMoney(amount: number) {
-  return rubles.format(amount);
+const FORMATTERS: Record<Currency, Intl.NumberFormat> = {
+  RUB: new Intl.NumberFormat("ru-RU", {
+    style: "currency",
+    currency: "RUB",
+    maximumFractionDigits: 2,
+  }),
+  USD: new Intl.NumberFormat("ru-RU", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  }),
+  BYN: new Intl.NumberFormat("ru-BY", {
+    style: "currency",
+    currency: "BYN",
+    maximumFractionDigits: 2,
+  }),
+  EUR: new Intl.NumberFormat("ru-RU", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 2,
+  }),
+};
+
+export function formatMoney(amount: number, currency: Currency) {
+  return FORMATTERS[currency].format(amount);
 }
 
-export function formatSignedMoney(amount: number, type: "income" | "expense") {
-  const value = formatMoney(amount);
+export function formatSignedMoney(
+  amount: number,
+  type: "income" | "expense",
+  currency: Currency,
+) {
+  const value = formatMoney(amount, currency);
   return type === "income" ? `+${value}` : `−${value}`;
 }
 

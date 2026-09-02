@@ -1,6 +1,7 @@
 "use client";
 
 import { CategoryIcon } from "@/components/finance/category-icon";
+import { useFinance } from "@/components/finance/finance-context";
 import { formatSignedMoney } from "@/lib/format";
 import type { Category, Transaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ export function TransactionRow({
   category?: Category;
   onClick?: () => void;
 }) {
+  const { state } = useFinance();
   return (
     <button
       type="button"
@@ -40,7 +42,7 @@ export function TransactionRow({
           transaction.type === "income" ? "text-emerald-400" : "text-foreground",
         )}
       >
-        {formatSignedMoney(transaction.amount, transaction.type)}
+        {formatSignedMoney(transaction.amount, transaction.type, state.currency)}
       </span>
     </button>
   );

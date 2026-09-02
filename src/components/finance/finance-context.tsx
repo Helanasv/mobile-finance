@@ -9,7 +9,7 @@ import {
   setFinanceState,
   subscribeFinance,
 } from "@/lib/store";
-import type { Budget, FinanceState, Transaction } from "@/lib/types";
+import type { Budget, Currency, FinanceState, Transaction } from "@/lib/types";
 
 type FinanceContextValue = {
   ready: boolean;
@@ -18,6 +18,7 @@ type FinanceContextValue = {
   updateTransaction: (tx: Transaction) => void;
   deleteTransaction: (id: string) => void;
   upsertBudget: (budget: Budget) => void;
+  setCurrency: (currency: Currency) => void;
   resetDemo: () => void;
   clearAll: () => void;
 };
@@ -69,16 +70,24 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const setCurrency = useCallback((currency: Currency) => {
+    setFinanceState((current) => ({ ...current, currency }));
+  }, []);
+
   const resetDemo = useCallback(() => {
-    setFinanceState(createInitialState());
+    setFinanceState((current) => ({
+      ...createInitialState(),
+      currency: current.currency,
+    }));
   }, []);
 
   const clearAll = useCallback(() => {
-    setFinanceState({
+    setFinanceState((current) => ({
+      currency: current.currency,
       categories: createInitialState().categories,
       transactions: [],
       budgets: [],
-    });
+    }));
   }, []);
 
   const value = useMemo(
@@ -89,6 +98,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       updateTransaction,
       deleteTransaction,
       upsertBudget,
+      setCurrency,
       resetDemo,
       clearAll,
     }),
@@ -99,6 +109,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       updateTransaction,
       deleteTransaction,
       upsertBudget,
+      setCurrency,
       resetDemo,
       clearAll,
     ],

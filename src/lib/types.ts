@@ -1,3 +1,7 @@
+import type { Currency } from "@/lib/currency";
+
+export type { Currency };
+
 export type TransactionType = "income" | "expense";
 
 export type Category = {
@@ -23,6 +27,7 @@ export type Budget = {
 };
 
 export type FinanceState = {
+  currency: Currency;
   categories: Category[];
   transactions: Transaction[];
   budgets: Budget[];

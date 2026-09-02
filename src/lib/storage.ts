@@ -1,4 +1,5 @@
 import { createInitialState } from "@/lib/defaults";
+import { isCurrency } from "@/lib/currency";
 import type { FinanceState } from "@/lib/types";
 
 export const STORAGE_KEY = "karman-finance-v2";
@@ -14,6 +15,7 @@ export function loadState(): FinanceState {
       return createInitialState();
     }
     return {
+      currency: isCurrency(parsed.currency) ? parsed.currency : "RUB",
       categories: parsed.categories,
       transactions: parsed.transactions,
       budgets: parsed.budgets ?? [],

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { CategoryIcon } from "@/components/finance/category-icon";
+import { CurrencySwitcher } from "@/components/finance/currency-switcher";
 import { useFinance } from "@/components/finance/finance-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +18,7 @@ import { formatMoney, formatMonthTitle, monthKey } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export function BudgetsScreen() {
-  const { ready, state, upsertBudget, resetDemo, clearAll } = useFinance();
+  const { ready, state, upsertBudget, setCurrency, resetDemo, clearAll } = useFinance();
   const month = monthKey();
   const totals = monthTotals(state, month);
   const spend = categorySpend(state, month, "expense");
@@ -46,6 +47,14 @@ export function BudgetsScreen() {
         </p>
       </header>
 
+      <section className="space-y-2">
+        <p className="text-sm font-medium">Валюта</p>
+        <CurrencySwitcher value={state.currency} onChange={setCurrency} />
+        <p className="text-xs text-muted-foreground">
+          Суммы показываются в выбранной валюте, курс не пересчитывается.
+        </p>
+      </section>
+
       <section className="rounded-3xl border p-4">
         <p className="text-sm text-muted-foreground">Расходы по категориям</p>
         {spend.length === 0 ? (
@@ -65,7 +74,7 @@ export function BudgetsScreen() {
                 <div className="min-w-0 flex-1">
                   <div className="flex justify-between text-sm">
                     <span className="truncate">{category.name}</span>
-                    <span className="tabular-nums">{formatMoney(amount)}</span>
+                    <span className="tabular-nums">{formatMoney(amount, state.currency)}</span>
                   </div>
                   <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
                     <div
@@ -82,8 +91,8 @@ export function BudgetsScreen() {
           </ul>
         )}
         <p className="mt-4 text-sm text-muted-foreground">
-          Всего потрачено {formatMoney(totals.expense)} из доходов{" "}
-          {formatMoney(totals.income)}
+          Всего потрачено {formatMoney(totals.expense, state.currency)} из доходов{" "}
+          {formatMoney(totals.income, state.currency)}
         </p>
       </section>
 
@@ -105,8 +114,10 @@ export function BudgetsScreen() {
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{category.name}</p>
                   <p className={cn("text-sm tabular-nums", over && "text-destructive")}>
-                    {formatMoney(spent)}
-                    {limit ? ` из ${formatMoney(limit)}` : " — лимит не задан"}
+                    {formatMoney(spent, state.currency)}
+                    {limit
+                      ? ` из ${formatMoney(limit, state.currency)}`
+                      : " — лимит не задан"}
                   </p>
                 </div>
               </div>
@@ -126,7 +137,10 @@ export function BudgetsScreen() {
                     toast.error("Введите лимит");
                     return;
                   }
-                  upsertBudget({ categoryId: category.id, limit: Math.round(value) });
+                  upsertBudget({
+                    categoryId: category.id,
+                    limit: Math.round(value * 100) / 100,
+                  });
                   toast.success(`Лимит для «${category.name}» обновлён`);
                 }}
               >

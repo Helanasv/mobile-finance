@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import { useEditTransaction } from "@/components/finance/app-shell";
 import { CategoryIcon } from "@/components/finance/category-icon";
+import { CurrencySwitcher } from "@/components/finance/currency-switcher";
 import { useFinance } from "@/components/finance/finance-context";
 import { TransactionRow } from "@/components/finance/transaction-row";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ import {
 } from "@/lib/format";
 
 export function HomeScreen() {
-  const { ready, state } = useFinance();
+  const { ready, state, setCurrency } = useFinance();
   const edit = useEditTransaction();
   const [month, setMonth] = useState(monthKey());
 
@@ -83,27 +84,38 @@ export function HomeScreen() {
       </header>
 
       <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-700 p-5 text-emerald-950 shadow-lg">
-        <p className="text-sm font-medium text-emerald-950/70">Все счета</p>
-        <p className="mt-1 text-4xl font-semibold tracking-tight tabular-nums">
-          {formatMoney(balance)}
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-sm font-medium text-emerald-950/70">Все счета</p>
+          <div className="w-[11.5rem]">
+            <CurrencySwitcher
+              value={state.currency}
+              onChange={setCurrency}
+              variant="on-gradient"
+            />
+          </div>
+        </div>
+        <p className="mt-3 text-4xl font-semibold tracking-tight tabular-nums">
+          {formatMoney(balance, state.currency)}
         </p>
         <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
           <div className="rounded-2xl bg-white/25 p-3">
             <p className="text-emerald-950/70">Доходы</p>
             <p className="mt-1 text-lg font-semibold tabular-nums">
-              {formatMoney(totals.income)}
+              {formatMoney(totals.income, state.currency)}
             </p>
           </div>
           <div className="rounded-2xl bg-black/15 p-3 text-white">
             <p className="text-white/70">Расходы</p>
             <p className="mt-1 text-lg font-semibold tabular-nums">
-              {formatMoney(totals.expense)}
+              {formatMoney(totals.expense, state.currency)}
             </p>
           </div>
         </div>
         <p className="mt-4 text-sm">
           За месяц осталось{" "}
-          <span className="font-semibold tabular-nums">{formatMoney(leftover)}</span>
+          <span className="font-semibold tabular-nums">
+            {formatMoney(leftover, state.currency)}
+          </span>
         </p>
       </section>
 
@@ -124,7 +136,7 @@ export function HomeScreen() {
               <div className="flex justify-between text-sm">
                 <span>{tightBudget.category.name}</span>
                 <span className="tabular-nums text-muted-foreground">
-                  {formatMoney(tightBudget.spent)} / {formatMoney(tightBudget.budget.limit)}
+                  {formatMoney(tightBudget.spent, state.currency)} / {formatMoney(tightBudget.budget.limit, state.currency)}
                 </span>
               </div>
               <Progress

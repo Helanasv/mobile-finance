@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { useFinance } from "@/components/finance/finance-context";
 import { CategoryIcon } from "@/components/finance/category-icon";
+import { currencyMeta } from "@/lib/currency";
 import { todayIso } from "@/lib/format";
 import type { Transaction, TransactionType } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -80,7 +81,7 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
     const payload = {
       type,
       categoryId,
-      amount: Math.round(value),
+      amount: Math.round(value * 100) / 100,
       note: note.trim(),
       date,
     };
@@ -137,10 +138,10 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Сумма, ₽</Label>
+            <Label htmlFor="amount">Сумма, {currencyMeta(state.currency).symbol}</Label>
             <Input
               id="amount"
-              inputMode="numeric"
+              inputMode="decimal"
               placeholder="0"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
