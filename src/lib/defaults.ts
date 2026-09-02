@@ -17,13 +17,14 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: "other-out", name: "Прочее", type: "expense", icon: "more-horizontal", color: "#94a3b8" },
 ];
 
-function daysAgo(n: number) {
-  const date = new Date();
-  date.setDate(date.getDate() - n);
+function monthDay(day: number) {
+  const now = new Date();
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const clamped = Math.min(Math.max(1, day), Math.min(now.getDate(), lastDay));
   return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, "0"),
-    String(date.getDate()).padStart(2, "0"),
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(clamped).padStart(2, "0"),
   ].join("-");
 }
 
@@ -36,7 +37,7 @@ export function createSeedTransactions(): Transaction[] {
       categoryId: "salary",
       amount: 128000,
       note: "Аванс и оклад",
-      date: daysAgo(12),
+      date: monthDay(1),
     },
     {
       id: "t2",
@@ -44,7 +45,7 @@ export function createSeedTransactions(): Transaction[] {
       categoryId: "home",
       amount: 42000,
       note: "Аренда квартиры",
-      date: daysAgo(10),
+      date: monthDay(1),
     },
     {
       id: "t3",
@@ -52,7 +53,7 @@ export function createSeedTransactions(): Transaction[] {
       categoryId: "food",
       amount: 4680,
       note: "Перекрёсток",
-      date: daysAgo(3),
+      date: monthDay(2),
     },
     {
       id: "t4",
@@ -68,7 +69,7 @@ export function createSeedTransactions(): Transaction[] {
       categoryId: "transport",
       amount: 2300,
       note: "Тройка на месяц",
-      date: daysAgo(8),
+      date: monthDay(1),
     },
     {
       id: "t6",
@@ -76,7 +77,7 @@ export function createSeedTransactions(): Transaction[] {
       categoryId: "subs",
       amount: 399,
       note: "Музыка",
-      date: daysAgo(2),
+      date: monthDay(2),
     },
     {
       id: "t7",
@@ -84,7 +85,7 @@ export function createSeedTransactions(): Transaction[] {
       categoryId: "shop",
       amount: 3190,
       note: "Кроссовки со скидкой",
-      date: daysAgo(5),
+      date: monthDay(2),
     },
     {
       id: "t8",
@@ -92,7 +93,7 @@ export function createSeedTransactions(): Transaction[] {
       categoryId: "freelance",
       amount: 18000,
       note: "Правки лендинга",
-      date: daysAgo(4),
+      date: monthDay(2),
     },
     {
       id: "t9",
@@ -100,7 +101,7 @@ export function createSeedTransactions(): Transaction[] {
       categoryId: "fun",
       amount: 1200,
       note: "Кино",
-      date: daysAgo(1),
+      date: monthDay(1),
     },
     {
       id: "t10",
@@ -108,7 +109,7 @@ export function createSeedTransactions(): Transaction[] {
       categoryId: "health",
       amount: 2100,
       note: "Аптека",
-      date: daysAgo(6),
+      date: monthDay(1),
     },
   ];
 }

@@ -4,6 +4,7 @@ import type { FinanceState } from "@/lib/types";
 
 const listeners = new Set<() => void>();
 let snapshot: FinanceState | null = null;
+const serverSnapshot = createInitialState();
 
 function emit() {
   for (const listener of listeners) listener();
@@ -20,7 +21,7 @@ export function getFinanceSnapshot(): FinanceState {
 }
 
 export function getServerFinanceSnapshot(): FinanceState {
-  return createInitialState();
+  return serverSnapshot;
 }
 
 export function setFinanceState(

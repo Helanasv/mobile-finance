@@ -1,7 +1,7 @@
 import { createInitialState } from "@/lib/defaults";
 import type { FinanceState } from "@/lib/types";
 
-export const STORAGE_KEY = "karman-finance-v1";
+export const STORAGE_KEY = "karman-finance-v2";
 
 export function loadState(): FinanceState {
   if (typeof window === "undefined") return createInitialState();
