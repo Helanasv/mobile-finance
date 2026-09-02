@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 
 import { AppShell } from "@/components/finance/app-shell";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 import "./globals.css";
@@ -35,10 +34,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ru" className={`${manrope.variable} h-full dark antialiased`}>
       <body className="min-h-full bg-background font-sans text-foreground">
-        <ThemeProvider>
-          <AppShell>{children}</AppShell>
-          <Toaster position="top-center" />
-        </ThemeProvider>
+        <AppShell>{children}</AppShell>
+        <Toaster position="top-center" />
       </body>
     </html>
   );
