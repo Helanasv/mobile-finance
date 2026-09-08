@@ -20,7 +20,7 @@ export function CurrencySwitcher({
         variant === "on-gradient" ? "bg-black/15" : "bg-muted",
       )}
       role="radiogroup"
-      aria-label="Валюта"
+      aria-label="Currency"
     >
       {CURRENCIES.map((item) => {
         const selected = value === item.code;

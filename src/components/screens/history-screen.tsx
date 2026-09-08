@@ -3,22 +3,19 @@
 import { useMemo, useState } from "react";
 
 import { useEditTransaction } from "@/components/finance/app-shell";
-import { useFinance } from "@/components/finance/finance-context";
+import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { TransactionRow } from "@/components/finance/transaction-row";
 import { Input } from "@/components/ui/input";
 import { categoryById, groupedTransactions } from "@/lib/finance";
 import { formatDayHeading } from "@/lib/format";
+import { categoryLabel } from "@/lib/i18n";
 import type { TransactionType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const FILTERS: { id: "all" | TransactionType; label: string }[] = [
-  { id: "all", label: "Все" },
-  { id: "expense", label: "Расходы" },
-  { id: "income", label: "Доходы" },
-];
-
 export function HistoryScreen() {
   const { ready, state } = useFinance();
+  const t = useT();
+  const locale = useLocale();
   const edit = useEditTransaction();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | TransactionType>("all");
@@ -29,10 +26,15 @@ export function HistoryScreen() {
       if (filter !== "all" && tx.type !== filter) return false;
       if (!q) return true;
       const category = categoryById(state, tx.categoryId);
-      return (
-        category?.name.toLowerCase().includes(q) ||
-        tx.note.toLowerCase().includes(q)
-      );
+      const labels = [
+        category?.name,
+        category ? categoryLabel(category.id, "ru") : "",
+        category ? categoryLabel(category.id, "en") : "",
+        tx.note,
+      ]
+        .join(" ")
+        .toLowerCase();
+      return labels.includes(q);
     });
   }, [filter, query, state]);
 
@@ -45,19 +47,25 @@ export function HistoryScreen() {
   return (
     <div className="flex flex-1 flex-col gap-4">
       <header>
-        <p className="text-sm text-muted-foreground">Карман</p>
-        <h1 className="text-2xl font-semibold tracking-tight">История</h1>
+        <p className="text-sm text-muted-foreground">{t.appName}</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t.history}</h1>
       </header>
 
       <Input
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Категория или комментарий"
+        placeholder={t.searchPlaceholder}
         className="h-11 rounded-2xl"
       />
 
       <div className="flex gap-2">
-        {FILTERS.map((item) => (
+        {(
+          [
+            { id: "all" as const, label: t.filterAll },
+            { id: "expense" as const, label: t.expense },
+            { id: "income" as const, label: t.income },
+          ]
+        ).map((item) => (
           <button
             key={item.id}
             type="button"
@@ -76,17 +84,15 @@ export function HistoryScreen() {
 
       {groups.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center rounded-3xl border border-dashed px-6 py-16 text-center">
-          <p className="font-medium">Ничего не нашлось</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Измените фильтр или добавьте операцию плюсом внизу.
-          </p>
+          <p className="font-medium">{t.nothingFound}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t.nothingHint}</p>
         </div>
       ) : (
         <div className="space-y-6">
           {groups.map(([day, list]) => (
             <section key={day}>
               <h2 className="mb-1 px-1 text-sm font-medium text-muted-foreground">
-                {formatDayHeading(day)}
+                {formatDayHeading(day, locale)}
               </h2>
               {list.map((tx) => (
                 <TransactionRow

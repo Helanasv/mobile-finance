@@ -1,6 +1,7 @@
 import type { Currency } from "@/lib/currency";
+import type { Locale } from "@/lib/i18n";
 
-export type { Currency };
+export type { Currency, Locale };
 
 export type TransactionType = "income" | "expense";
 
@@ -27,6 +28,7 @@ export type Budget = {
 };
 
 export type FinanceState = {
+  locale: Locale | null;
   currency: Currency;
   categories: Category[];
   transactions: Transaction[];

@@ -124,6 +124,7 @@ export const DEFAULT_BUDGETS: Budget[] = [
 
 export function createInitialState(): FinanceState {
   return {
+    locale: null,
     currency: "RUB",
     categories: DEFAULT_CATEGORIES,
     transactions: createSeedTransactions(),

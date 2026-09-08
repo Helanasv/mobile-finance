@@ -9,7 +9,8 @@ import {
   setFinanceState,
   subscribeFinance,
 } from "@/lib/store";
-import type { Budget, Currency, FinanceState, Transaction } from "@/lib/types";
+import { messages } from "@/lib/i18n";
+import type { Budget, Currency, FinanceState, Locale, Transaction } from "@/lib/types";
 
 type FinanceContextValue = {
   ready: boolean;
@@ -19,6 +20,7 @@ type FinanceContextValue = {
   deleteTransaction: (id: string) => void;
   upsertBudget: (budget: Budget) => void;
   setCurrency: (currency: Currency) => void;
+  setLocale: (locale: Locale) => void;
   resetDemo: () => void;
   clearAll: () => void;
 };
@@ -74,15 +76,21 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setFinanceState((current) => ({ ...current, currency }));
   }, []);
 
+  const setLocale = useCallback((locale: Locale) => {
+    setFinanceState((current) => ({ ...current, locale }));
+  }, []);
+
   const resetDemo = useCallback(() => {
     setFinanceState((current) => ({
       ...createInitialState(),
       currency: current.currency,
+      locale: current.locale,
     }));
   }, []);
 
   const clearAll = useCallback(() => {
     setFinanceState((current) => ({
+      locale: current.locale,
       currency: current.currency,
       categories: createInitialState().categories,
       transactions: [],
@@ -99,6 +107,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       deleteTransaction,
       upsertBudget,
       setCurrency,
+      setLocale,
       resetDemo,
       clearAll,
     }),
@@ -110,6 +119,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       deleteTransaction,
       upsertBudget,
       setCurrency,
+      setLocale,
       resetDemo,
       clearAll,
     ],
@@ -122,4 +132,14 @@ export function useFinance() {
   const ctx = useContext(FinanceContext);
   if (!ctx) throw new Error("useFinance must be used inside FinanceProvider");
   return ctx;
+}
+
+export function useT() {
+  const { state } = useFinance();
+  return messages[state.locale ?? "ru"];
+}
+
+export function useLocale() {
+  const { state } = useFinance();
+  return state.locale ?? "ru";
 }

@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import { useEditTransaction } from "@/components/finance/app-shell";
 import { CategoryIcon } from "@/components/finance/category-icon";
 import { CurrencySwitcher } from "@/components/finance/currency-switcher";
-import { useFinance } from "@/components/finance/finance-context";
+import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { TransactionRow } from "@/components/finance/transaction-row";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -25,9 +25,12 @@ import {
   monthKey,
   shiftMonth,
 } from "@/lib/format";
+import { categoryLabel } from "@/lib/i18n";
 
 export function HomeScreen() {
   const { ready, state, setCurrency } = useFinance();
+  const t = useT();
+  const locale = useLocale();
   const edit = useEditTransaction();
   const [month, setMonth] = useState(monthKey());
 
@@ -57,26 +60,26 @@ export function HomeScreen() {
     <div className="flex flex-1 flex-col gap-5">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-muted-foreground">Карман</p>
-          <h1 className="text-2xl font-semibold tracking-tight">Баланс</h1>
+          <p className="text-sm text-muted-foreground">{t.appName}</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{t.balance}</h1>
         </div>
         <div className="flex items-center gap-1 rounded-full bg-muted px-1">
           <Button
             size="icon-sm"
             variant="ghost"
             onClick={() => setMonth(shiftMonth(month, -1))}
-            aria-label="Предыдущий месяц"
+            aria-label={t.prevMonth}
           >
             <ChevronLeft />
           </Button>
           <span className="min-w-[7.5rem] text-center text-sm capitalize">
-            {formatMonthTitle(month)}
+            {formatMonthTitle(month, locale)}
           </span>
           <Button
             size="icon-sm"
             variant="ghost"
             onClick={() => setMonth(shiftMonth(month, 1))}
-            aria-label="Следующий месяц"
+            aria-label={t.nextMonth}
           >
             <ChevronRight />
           </Button>
@@ -85,7 +88,7 @@ export function HomeScreen() {
 
       <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-700 p-5 text-emerald-950 shadow-lg">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-medium text-emerald-950/70">Все счета</p>
+          <p className="text-sm font-medium text-emerald-950/70">{t.allAccounts}</p>
           <div className="w-[11.5rem]">
             <CurrencySwitcher
               value={state.currency}
@@ -95,26 +98,26 @@ export function HomeScreen() {
           </div>
         </div>
         <p className="mt-3 text-4xl font-semibold tracking-tight tabular-nums">
-          {formatMoney(balance, state.currency)}
+          {formatMoney(balance, state.currency, locale)}
         </p>
         <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
           <div className="rounded-2xl bg-white/25 p-3">
-            <p className="text-emerald-950/70">Доходы</p>
+            <p className="text-emerald-950/70">{t.income}</p>
             <p className="mt-1 text-lg font-semibold tabular-nums">
-              {formatMoney(totals.income, state.currency)}
+              {formatMoney(totals.income, state.currency, locale)}
             </p>
           </div>
           <div className="rounded-2xl bg-black/15 p-3 text-white">
-            <p className="text-white/70">Расходы</p>
+            <p className="text-white/70">{t.expense}</p>
             <p className="mt-1 text-lg font-semibold tabular-nums">
-              {formatMoney(totals.expense, state.currency)}
+              {formatMoney(totals.expense, state.currency, locale)}
             </p>
           </div>
         </div>
         <p className="mt-4 text-sm">
-          За месяц осталось{" "}
+          {t.leftover}{" "}
           <span className="font-semibold tabular-nums">
-            {formatMoney(leftover, state.currency)}
+            {formatMoney(leftover, state.currency, locale)}
           </span>
         </p>
       </section>
@@ -122,7 +125,7 @@ export function HomeScreen() {
       {tightBudget?.category ? (
         <section className="rounded-3xl border bg-card p-4">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-medium">Лимит под давлением</p>
+            <p className="text-sm font-medium">{t.tightLimit}</p>
             <Sparkles className="size-4 text-amber-400" />
           </div>
           <div className="flex items-center gap-3">
@@ -134,9 +137,9 @@ export function HomeScreen() {
             </span>
             <div className="min-w-0 flex-1">
               <div className="flex justify-between text-sm">
-                <span>{tightBudget.category.name}</span>
+                <span>{categoryLabel(tightBudget.category.id, locale, tightBudget.category.name)}</span>
                 <span className="tabular-nums text-muted-foreground">
-                  {formatMoney(tightBudget.spent, state.currency)} / {formatMoney(tightBudget.budget.limit, state.currency)}
+                  {formatMoney(tightBudget.spent, state.currency, locale)} / {formatMoney(tightBudget.budget.limit, state.currency, locale)}
                 </span>
               </div>
               <Progress
@@ -150,13 +153,13 @@ export function HomeScreen() {
 
       <section className="flex flex-1 flex-col">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Операции месяца</h2>
+          <h2 className="text-lg font-semibold">{t.monthOps}</h2>
         </div>
         {recentGroups.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center rounded-3xl border border-dashed px-6 py-12 text-center">
-            <p className="font-medium">Пока пусто</p>
+            <p className="font-medium">{t.emptyTitle}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Нажмите плюс внизу, чтобы записать первый расход или доход.
+              {t.emptyHint}
             </p>
           </div>
         ) : (
@@ -164,7 +167,7 @@ export function HomeScreen() {
             {recentGroups.map(([day, list]) => (
               <div key={day}>
                 <p className="mb-1 px-1 text-sm font-medium text-muted-foreground">
-                  {formatDayHeading(day)}
+                  {formatDayHeading(day, locale)}
                 </p>
                 {list.map((tx) => (
                   <TransactionRow

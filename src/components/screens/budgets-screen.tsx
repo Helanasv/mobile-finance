@@ -5,7 +5,8 @@ import { toast } from "sonner";
 
 import { CategoryIcon } from "@/components/finance/category-icon";
 import { CurrencySwitcher } from "@/components/finance/currency-switcher";
-import { useFinance } from "@/components/finance/finance-context";
+import { LanguageSwitcher } from "@/components/finance/language-switcher";
+import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -15,10 +16,13 @@ import {
   spentInCategory,
 } from "@/lib/finance";
 import { formatMoney, formatMonthTitle, monthKey } from "@/lib/format";
+import { categoryLabel } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export function BudgetsScreen() {
   const { ready, state, upsertBudget, setCurrency, resetDemo, clearAll } = useFinance();
+  const t = useT();
+  const locale = useLocale();
   const month = monthKey();
   const totals = monthTotals(state, month);
   const spend = categorySpend(state, month, "expense");
@@ -40,27 +44,28 @@ export function BudgetsScreen() {
   return (
     <div className="flex flex-1 flex-col gap-5">
       <header>
-        <p className="text-sm text-muted-foreground">Карман</p>
-        <h1 className="text-2xl font-semibold tracking-tight">Бюджеты</h1>
+        <p className="text-sm text-muted-foreground">{t.appName}</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t.budgets}</h1>
         <p className="mt-1 text-sm capitalize text-muted-foreground">
-          {formatMonthTitle(month)}
+          {formatMonthTitle(month, locale)}
         </p>
       </header>
 
       <section className="space-y-2">
-        <p className="text-sm font-medium">Валюта</p>
+        <p className="text-sm font-medium">{t.language}</p>
+        <LanguageSwitcher />
+      </section>
+
+      <section className="space-y-2">
+        <p className="text-sm font-medium">{t.currency}</p>
         <CurrencySwitcher value={state.currency} onChange={setCurrency} />
-        <p className="text-xs text-muted-foreground">
-          Суммы показываются в выбранной валюте, курс не пересчитывается.
-        </p>
+        <p className="text-xs text-muted-foreground">{t.currencyHint}</p>
       </section>
 
       <section className="rounded-3xl border p-4">
-        <p className="text-sm text-muted-foreground">Расходы по категориям</p>
+        <p className="text-sm text-muted-foreground">{t.spendByCategory}</p>
         {spend.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            В этом месяце ещё нет расходов.
-          </p>
+          <p className="mt-3 text-sm text-muted-foreground">{t.noSpend}</p>
         ) : (
           <ul className="mt-4 space-y-3">
             {spend.map(({ category, amount }) => (
@@ -73,8 +78,10 @@ export function BudgetsScreen() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex justify-between text-sm">
-                    <span className="truncate">{category.name}</span>
-                    <span className="tabular-nums">{formatMoney(amount, state.currency)}</span>
+                    <span className="truncate">
+                      {categoryLabel(category.id, locale, category.name)}
+                    </span>
+                    <span className="tabular-nums">{formatMoney(amount, state.currency, locale)}</span>
                   </div>
                   <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
                     <div
@@ -91,13 +98,15 @@ export function BudgetsScreen() {
           </ul>
         )}
         <p className="mt-4 text-sm text-muted-foreground">
-          Всего потрачено {formatMoney(totals.expense, state.currency)} из доходов{" "}
-          {formatMoney(totals.income, state.currency)}
+          {t.spentOfIncome(
+            formatMoney(totals.expense, state.currency, locale),
+            formatMoney(totals.income, state.currency, locale),
+          )}
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Лимиты</h2>
+        <h2 className="text-lg font-semibold">{t.limits}</h2>
         {budgetRows.map(({ category, budget, spent }) => {
           const limit = budget?.limit ?? 0;
           const ratio = limit > 0 ? spent / limit : 0;
@@ -112,12 +121,14 @@ export function BudgetsScreen() {
                   <CategoryIcon name={category.icon} className="size-4" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium">{category.name}</p>
+                  <p className="font-medium">
+                    {categoryLabel(category.id, locale, category.name)}
+                  </p>
                   <p className={cn("text-sm tabular-nums", over && "text-destructive")}>
-                    {formatMoney(spent, state.currency)}
+                    {formatMoney(spent, state.currency, locale)}
                     {limit
-                      ? ` из ${formatMoney(limit, state.currency)}`
-                      : " — лимит не задан"}
+                      ? ` ${t.of} ${formatMoney(limit, state.currency, locale)}`
+                      : t.noLimit}
                   </p>
                 </div>
               </div>
@@ -134,19 +145,21 @@ export function BudgetsScreen() {
                   const raw = drafts[category.id] ?? String(limit || "");
                   const value = Number(raw.replace(",", ".").replace(/\s/g, ""));
                   if (!Number.isFinite(value) || value < 0) {
-                    toast.error("Введите лимит");
+                    toast.error(t.enterLimit);
                     return;
                   }
                   upsertBudget({
                     categoryId: category.id,
                     limit: Math.round(value * 100) / 100,
                   });
-                  toast.success(`Лимит для «${category.name}» обновлён`);
+                  toast.success(
+                    t.limitUpdated(categoryLabel(category.id, locale, category.name)),
+                  );
                 }}
               >
                 <Input
                   inputMode="numeric"
-                  placeholder="Лимит, ₽"
+                  placeholder={`${t.limitPlaceholder}, ${state.currency}`}
                   className="h-10 rounded-xl"
                   value={drafts[category.id] ?? (limit ? String(limit) : "")}
                   onChange={(event) =>
@@ -157,7 +170,7 @@ export function BudgetsScreen() {
                   }
                 />
                 <Button type="submit" className="h-10 rounded-xl">
-                  Ок
+                  {t.ok}
                 </Button>
               </form>
             </div>
@@ -171,20 +184,20 @@ export function BudgetsScreen() {
           className="h-11 w-full rounded-2xl"
           onClick={() => {
             resetDemo();
-            toast.success("Загружен демо-месяц");
+            toast.success(t.demoLoaded);
           }}
         >
-          Вернуть демо-данные
+          {t.restoreDemo}
         </Button>
         <Button
           variant="ghost"
           className="h-11 w-full rounded-2xl text-destructive"
           onClick={() => {
             clearAll();
-            toast.success("Все операции удалены");
+            toast.success(t.cleared);
           }}
         >
-          Очистить всё
+          {t.clearAll}
         </Button>
       </section>
     </div>

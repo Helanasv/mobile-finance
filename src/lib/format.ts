@@ -1,38 +1,33 @@
 import type { Currency } from "@/lib/currency";
+import type { Locale } from "@/lib/i18n";
+import { messages, intlTag } from "@/lib/i18n";
 
-const FORMATTERS: Record<Currency, Intl.NumberFormat> = {
-  RUB: new Intl.NumberFormat("ru-RU", {
-    style: "currency",
-    currency: "RUB",
-    maximumFractionDigits: 2,
-  }),
-  USD: new Intl.NumberFormat("ru-RU", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }),
-  BYN: new Intl.NumberFormat("ru-BY", {
-    style: "currency",
-    currency: "BYN",
-    maximumFractionDigits: 2,
-  }),
-  EUR: new Intl.NumberFormat("ru-RU", {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 2,
-  }),
-};
+const formatterCache = new Map<string, Intl.NumberFormat>();
 
-export function formatMoney(amount: number, currency: Currency) {
-  return FORMATTERS[currency].format(amount);
+function moneyFormatter(currency: Currency, locale: Locale) {
+  const key = `${locale}-${currency}`;
+  const cached = formatterCache.get(key);
+  if (cached) return cached;
+  const formatter = new Intl.NumberFormat(intlTag(locale), {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 2,
+  });
+  formatterCache.set(key, formatter);
+  return formatter;
+}
+
+export function formatMoney(amount: number, currency: Currency, locale: Locale = "ru") {
+  return moneyFormatter(currency, locale).format(amount);
 }
 
 export function formatSignedMoney(
   amount: number,
   type: "income" | "expense",
   currency: Currency,
+  locale: Locale = "ru",
 ) {
-  const value = formatMoney(amount, currency);
+  const value = formatMoney(amount, currency, locale);
   return type === "income" ? `+${value}` : `−${value}`;
 }
 
@@ -45,23 +40,24 @@ export function parseMonthKey(key: string) {
   return new Date(year, month - 1, 1);
 }
 
-export function formatMonthTitle(key: string) {
-  return new Intl.DateTimeFormat("ru-RU", {
+export function formatMonthTitle(key: string, locale: Locale = "ru") {
+  return new Intl.DateTimeFormat(intlTag(locale), {
     month: "long",
     year: "numeric",
   }).format(parseMonthKey(key));
 }
 
-export function formatDayHeading(isoDate: string) {
+export function formatDayHeading(isoDate: string, locale: Locale = "ru") {
   const date = new Date(`${isoDate}T12:00:00`);
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
+  const t = messages[locale];
 
-  if (sameDay(date, today)) return "Сегодня";
-  if (sameDay(date, yesterday)) return "Вчера";
+  if (sameDay(date, today)) return t.today;
+  if (sameDay(date, yesterday)) return t.yesterday;
 
-  return new Intl.DateTimeFormat("ru-RU", {
+  return new Intl.DateTimeFormat(intlTag(locale), {
     day: "numeric",
     month: "long",
     weekday: "short",

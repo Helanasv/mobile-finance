@@ -13,10 +13,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useFinance } from "@/components/finance/finance-context";
+import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { CategoryIcon } from "@/components/finance/category-icon";
 import { currencyMeta } from "@/lib/currency";
 import { todayIso } from "@/lib/format";
+import { categoryLabel } from "@/lib/i18n";
 import type { Transaction, TransactionType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,8 @@ type Props = {
 
 export function TransactionForm({ open, onOpenChange, initial }: Props) {
   const { state, addTransaction, updateTransaction, deleteTransaction } = useFinance();
+  const t = useT();
+  const locale = useLocale();
   const defaultType = initial?.type ?? "expense";
   const [type, setType] = useState<TransactionType>(defaultType);
   const [amount, setAmount] = useState(initial ? String(initial.amount) : "");
@@ -70,11 +73,11 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
     event.preventDefault();
     const value = Number(amount.replace(",", ".").replace(/\s/g, ""));
     if (!Number.isFinite(value) || value <= 0) {
-      toast.error("Укажите сумму больше нуля");
+      toast.error(t.amountError);
       return;
     }
     if (!categoryId) {
-      toast.error("Выберите категорию");
+      toast.error(t.categoryError);
       return;
     }
 
@@ -88,10 +91,10 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
 
     if (initial) {
       updateTransaction({ ...payload, id: initial.id });
-      toast.success("Операция обновлена");
+      toast.success(t.txUpdated);
     } else {
       addTransaction(payload);
-      toast.success(type === "income" ? "Доход записан" : "Расход записан");
+      toast.success(type === "income" ? t.incomeSaved : t.expenseSaved);
     }
     onOpenChange(false);
   }
@@ -103,10 +106,8 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
         className="mx-auto max-h-[92svh] w-full max-w-md overflow-y-auto rounded-t-3xl border-x px-5 pb-8"
       >
         <SheetHeader className="px-0 text-left">
-          <SheetTitle>{initial ? "Изменить операцию" : "Новая операция"}</SheetTitle>
-          <SheetDescription>
-            Сумма хранится только на этом телефоне, в браузере.
-          </SheetDescription>
+          <SheetTitle>{initial ? t.editTx : t.newTx}</SheetTitle>
+          <SheetDescription>{t.txStoredLocal}</SheetDescription>
         </SheetHeader>
 
         <form className="flex flex-col gap-5" onSubmit={submit}>
@@ -121,7 +122,7 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
               )}
               onClick={() => resetForType("expense")}
             >
-              Расход
+              {t.expense}
             </button>
             <button
               type="button"
@@ -133,12 +134,14 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
               )}
               onClick={() => resetForType("income")}
             >
-              Доход
+              {t.income}
             </button>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Сумма, {currencyMeta(state.currency).symbol}</Label>
+            <Label htmlFor="amount">
+              {t.amount}, {currencyMeta(state.currency).symbol}
+            </Label>
             <Input
               id="amount"
               inputMode="decimal"
@@ -151,7 +154,7 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
           </div>
 
           <div className="space-y-2">
-            <Label>Категория</Label>
+            <Label>{t.category}</Label>
             <div className="grid grid-cols-4 gap-2">
               {categories.map((category) => (
                 <button
@@ -171,7 +174,7 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
                   >
                     <CategoryIcon name={category.icon} className="size-4" />
                   </span>
-                  {category.name}
+                  {categoryLabel(category.id, locale, category.name)}
                 </button>
               ))}
             </div>
@@ -179,7 +182,7 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="date">Дата</Label>
+              <Label htmlFor="date">{t.date}</Label>
               <Input
                 id="date"
                 type="date"
@@ -189,12 +192,12 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="note">Комментарий</Label>
+              <Label htmlFor="note">{t.note}</Label>
               <Input
                 id="note"
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
-                placeholder="Необязательно"
+                placeholder={t.noteOptional}
                 className="h-11 rounded-xl"
               />
             </div>
@@ -209,15 +212,15 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
                 className="h-12 flex-1 rounded-2xl"
                 onClick={() => {
                   deleteTransaction(initial.id);
-                  toast.success("Операция удалена");
+                  toast.success(t.txDeleted);
                   onOpenChange(false);
                 }}
               >
-                Удалить
+                {t.delete}
               </Button>
             ) : null}
             <Button type="submit" size="lg" className="h-12 flex-1 rounded-2xl">
-              {initial ? "Сохранить" : "Добавить"}
+              {initial ? t.save : t.add}
             </Button>
           </div>
         </form>

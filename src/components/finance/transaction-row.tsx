@@ -1,8 +1,9 @@
 "use client";
 
 import { CategoryIcon } from "@/components/finance/category-icon";
-import { useFinance } from "@/components/finance/finance-context";
+import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { formatSignedMoney } from "@/lib/format";
+import { categoryLabel } from "@/lib/i18n";
 import type { Category, Transaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,8 @@ export function TransactionRow({
   onClick?: () => void;
 }) {
   const { state } = useFinance();
+  const locale = useLocale();
+  const t = useT();
   return (
     <button
       type="button"
@@ -30,10 +33,10 @@ export function TransactionRow({
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">
-          {category?.name ?? "Категория"}
+          {categoryLabel(category?.id ?? "", locale, category?.name) || t.category}
         </span>
         <span className="block truncate text-sm text-muted-foreground">
-          {transaction.note || "Без комментария"}
+          {transaction.note || t.noNote}
         </span>
       </span>
       <span
@@ -42,7 +45,7 @@ export function TransactionRow({
           transaction.type === "income" ? "text-emerald-400" : "text-foreground",
         )}
       >
-        {formatSignedMoney(transaction.amount, transaction.type, state.currency)}
+        {formatSignedMoney(transaction.amount, transaction.type, state.currency, locale)}
       </span>
     </button>
   );
