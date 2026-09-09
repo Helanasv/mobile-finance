@@ -17,8 +17,8 @@ export function BottomNav({ onAdd }: { onAdd: () => void }) {
   ];
 
   return (
-    <nav className="sticky bottom-0 z-40 border-t bg-background/90 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-md">
-      <div className="grid grid-cols-4 items-end">
+    <nav className="sticky bottom-0 z-40 px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))] pt-1">
+      <div className="relative grid grid-cols-4 items-end rounded-3xl border border-amber-200/15 bg-card/90 px-1 py-2 shadow-[0_-8px_40px_rgba(0,0,0,0.35)] backdrop-blur-md">
         {items.slice(0, 1).map((item) => (
           <NavLink key={item.href} {...item} active={pathname === item.href} />
         ))}
@@ -26,7 +26,7 @@ export function BottomNav({ onAdd }: { onAdd: () => void }) {
         <button
           type="button"
           onClick={onAdd}
-          className="mx-auto -mt-7 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-emerald-900/40"
+          className="mx-auto -mt-9 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_24px_rgba(212,175,110,0.35)]"
           aria-label={t.addTx}
         >
           <Plus className="size-7" />
@@ -60,7 +60,7 @@ function NavLink({
       href={href}
       className={cn(
         "flex flex-col items-center gap-1 py-1 text-[11px] font-medium",
-        active ? "text-foreground" : "text-muted-foreground",
+        active ? "text-primary" : "text-muted-foreground",
       )}
     >
       <Icon className="size-5" />

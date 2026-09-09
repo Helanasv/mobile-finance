@@ -45,8 +45,8 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-svh justify-center bg-zinc-950">
-      <div className="flex min-h-svh w-full max-w-md flex-col border-x border-white/5 bg-background shadow-[0_0_80px_rgba(16,185,129,0.08)]">
+    <div className="flex min-h-svh justify-center bg-[#120f0c]">
+      <div className="flex min-h-svh w-full max-w-md flex-col border-x border-amber-200/10 bg-background shadow-[0_0_90px_rgba(212,175,110,0.12)]">
         {needsLanguage ? (
           <main className="flex flex-1 flex-col overflow-y-auto px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]">
             <LanguageScreen />

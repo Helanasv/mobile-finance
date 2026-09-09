@@ -11,21 +11,26 @@ export function LanguageScreen() {
   }
 
   return (
-    <div className="flex flex-1 flex-col justify-center gap-8 px-2 py-10">
+    <div className="flex flex-1 flex-col justify-center gap-10 px-1 py-10">
       <div className="text-center">
-        <p className="text-sm text-muted-foreground">Карман · Karman</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+        <span className="mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl border border-amber-200/20 bg-primary/15 font-display text-2xl text-primary">
+          К
+        </span>
+        <p className="text-sm tracking-[0.2em] text-primary/80 uppercase">
+          Карман · Karman
+        </p>
+        <h1 className="mt-3 font-display text-4xl font-medium tracking-tight">
           Выберите язык
         </h1>
-        <p className="mt-1 text-lg text-muted-foreground">Choose language</p>
+        <p className="mt-2 text-lg text-muted-foreground">Choose language</p>
       </div>
       <div className="grid gap-3">
         <button
           type="button"
           onClick={() => choose("ru")}
-          className="rounded-3xl border bg-card px-5 py-5 text-left transition hover:bg-muted/60"
+          className="rounded-[1.6rem] border border-amber-200/15 bg-card px-5 py-6 text-left transition hover:border-primary/40 hover:bg-accent"
         >
-          <span className="block text-xl font-semibold">Русский</span>
+          <span className="block font-display text-2xl">Русский</span>
           <span className="mt-1 block text-sm text-muted-foreground">
             Интерфейс на русском
           </span>
@@ -33,9 +38,9 @@ export function LanguageScreen() {
         <button
           type="button"
           onClick={() => choose("en")}
-          className="rounded-3xl border bg-card px-5 py-5 text-left transition hover:bg-muted/60"
+          className="rounded-[1.6rem] border border-amber-200/15 bg-card px-5 py-6 text-left transition hover:border-primary/40 hover:bg-accent"
         >
-          <span className="block text-xl font-semibold">English</span>
+          <span className="block font-display text-2xl">English</span>
           <span className="mt-1 block text-sm text-muted-foreground">
             Use the app in English
           </span>

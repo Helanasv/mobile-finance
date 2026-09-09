@@ -60,8 +60,10 @@ export function HomeScreen() {
     <div className="flex flex-1 flex-col gap-5">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-muted-foreground">{t.appName}</p>
-          <h1 className="text-2xl font-semibold tracking-tight">{t.balance}</h1>
+          <p className="text-xs font-medium tracking-[0.18em] text-primary/80 uppercase">
+            {t.appName}
+          </p>
+          <h1 className="font-display text-3xl font-medium tracking-tight">{t.balance}</h1>
         </div>
         <div className="flex items-center gap-1 rounded-full bg-muted px-1">
           <Button
@@ -86,9 +88,10 @@ export function HomeScreen() {
         </div>
       </header>
 
-      <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-700 p-5 text-emerald-950 shadow-lg">
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-medium text-emerald-950/70">{t.allAccounts}</p>
+      <section className="relative overflow-hidden rounded-[1.75rem] border border-amber-200/20 bg-[linear-gradient(145deg,#2a231c_0%,#1a1612_55%,#3a2f24_100%)] p-5 text-amber-50 shadow-[inset_0_1px_0_rgba(255,220,160,0.15)]">
+        <div className="absolute top-0 left-0 h-full w-1.5 bg-primary" />
+        <div className="flex items-start justify-between gap-3 pl-2">
+          <p className="text-sm font-medium text-amber-100/70">{t.allAccounts}</p>
           <div className="w-[11.5rem]">
             <CurrencySwitcher
               value={state.currency}
@@ -97,36 +100,36 @@ export function HomeScreen() {
             />
           </div>
         </div>
-        <p className="mt-3 text-4xl font-semibold tracking-tight tabular-nums">
+        <p className="mt-4 pl-2 font-display text-[2.35rem] leading-none font-medium tracking-tight tabular-nums">
           {formatMoney(balance, state.currency, locale)}
         </p>
-        <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-2xl bg-white/25 p-3">
-            <p className="text-emerald-950/70">{t.income}</p>
-            <p className="mt-1 text-lg font-semibold tabular-nums">
+        <div className="mt-6 grid grid-cols-2 gap-3 pl-2 text-sm">
+          <div className="rounded-2xl border border-amber-100/10 bg-black/25 p-3">
+            <p className="text-amber-100/60">{t.income}</p>
+            <p className="mt-1 text-lg font-semibold tabular-nums text-primary">
               {formatMoney(totals.income, state.currency, locale)}
             </p>
           </div>
-          <div className="rounded-2xl bg-black/15 p-3 text-white">
-            <p className="text-white/70">{t.expense}</p>
+          <div className="rounded-2xl border border-amber-100/10 bg-black/25 p-3">
+            <p className="text-amber-100/60">{t.expense}</p>
             <p className="mt-1 text-lg font-semibold tabular-nums">
               {formatMoney(totals.expense, state.currency, locale)}
             </p>
           </div>
         </div>
-        <p className="mt-4 text-sm">
+        <p className="mt-4 pl-2 text-sm text-amber-100/80">
           {t.leftover}{" "}
-          <span className="font-semibold tabular-nums">
+          <span className="font-semibold tabular-nums text-primary">
             {formatMoney(leftover, state.currency, locale)}
           </span>
         </p>
       </section>
 
       {tightBudget?.category ? (
-        <section className="rounded-3xl border bg-card p-4">
+        <section className="rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-medium">{t.tightLimit}</p>
-            <Sparkles className="size-4 text-amber-400" />
+            <Sparkles className="size-4 text-primary" />
           </div>
           <div className="flex items-center gap-3">
             <span

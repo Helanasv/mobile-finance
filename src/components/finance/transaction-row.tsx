@@ -42,7 +42,7 @@ export function TransactionRow({
       <span
         className={cn(
           "shrink-0 text-sm font-semibold tabular-nums",
-          transaction.type === "income" ? "text-emerald-400" : "text-foreground",
+          transaction.type === "income" ? "text-primary" : "text-foreground",
         )}
       >
         {formatSignedMoney(transaction.amount, transaction.type, state.currency, locale)}

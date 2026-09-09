@@ -47,8 +47,10 @@ export function HistoryScreen() {
   return (
     <div className="flex flex-1 flex-col gap-4">
       <header>
-        <p className="text-sm text-muted-foreground">{t.appName}</p>
-        <h1 className="text-2xl font-semibold tracking-tight">{t.history}</h1>
+        <p className="text-xs font-medium tracking-[0.18em] text-primary/80 uppercase">
+          {t.appName}
+        </p>
+        <h1 className="font-display text-3xl font-medium tracking-tight">{t.history}</h1>
       </header>
 
       <Input

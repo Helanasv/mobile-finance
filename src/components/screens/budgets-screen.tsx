@@ -44,8 +44,10 @@ export function BudgetsScreen() {
   return (
     <div className="flex flex-1 flex-col gap-5">
       <header>
-        <p className="text-sm text-muted-foreground">{t.appName}</p>
-        <h1 className="text-2xl font-semibold tracking-tight">{t.budgets}</h1>
+        <p className="text-xs font-medium tracking-[0.18em] text-primary/80 uppercase">
+          {t.appName}
+        </p>
+        <h1 className="font-display text-3xl font-medium tracking-tight">{t.budgets}</h1>
         <p className="mt-1 text-sm capitalize text-muted-foreground">
           {formatMonthTitle(month, locale)}
         </p>

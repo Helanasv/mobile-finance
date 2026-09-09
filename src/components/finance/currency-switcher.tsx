@@ -36,10 +36,10 @@ export function CurrencySwitcher({
               "h-9 rounded-xl text-sm font-semibold transition",
               selected
                 ? variant === "on-gradient"
-                  ? "bg-white text-emerald-950 shadow-sm"
+                  ? "bg-primary text-primary-foreground shadow-sm"
                   : "bg-background text-foreground shadow-sm"
                 : variant === "on-gradient"
-                  ? "text-white/80"
+                  ? "text-amber-50/70"
                   : "text-muted-foreground",
             )}
           >
