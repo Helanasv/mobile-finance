@@ -18,12 +18,12 @@ const notoSerif = Noto_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Карман — личные финансы",
+  title: "Ауреа — личные финансы",
   description:
     "Мобильное приложение для учёта доходов, расходов и месячных бюджетов.",
   appleWebApp: {
     capable: true,
-    title: "Карман",
+    title: "Ауреа",
     statusBarStyle: "black-translucent",
   },
 };
