@@ -30,6 +30,7 @@ const ru = {
   history: "История",
   budgets: "Бюджеты",
   home: "Главная",
+  analysis: "Анализ",
   allAccounts: "Все счета",
   income: "Доходы",
   expense: "Расходы",
@@ -83,6 +84,34 @@ const ru = {
   txDeleted: "Операция удалена",
   today: "Сегодня",
   yesterday: "Вчера",
+  analysisAllTime: "За весь период",
+  analysisEmpty: "Нужны операции, чтобы показать, куда уходят деньги.",
+  analysisRange: (from: string, to: string) => `с ${from} по ${to}`,
+  analysisOps: (count: number) =>
+    count === 1 ? "1 операция" : count < 5 ? `${count} операции` : `${count} операций`,
+  leftoverAll: "Остаток за всё время",
+  whereMoneyGoes: "Куда уходит больше всего",
+  shareOfSpend: (pct: number) => `${pct}% всех расходов`,
+  byMonth: "По месяцам",
+  forecastTitle: "Прогноз на следующий месяц",
+  forecastHint: (n: number) =>
+    n === 1
+      ? "Пока мало данных: берём текущий месяц. Это оценка, не финансовый совет."
+      : `Среднее за последние ${n} месяца. Это оценка, не финансовый совет.`,
+  forecastIncome: "Ожидаемые доходы",
+  forecastExpense: "Ожидаемые расходы",
+  forecastLeft: "Ожидаемый остаток",
+  recommendations: "Рекомендации",
+  recTop: (name: string, pct: number) =>
+    `Больше всего уходит на «${name}» — ${pct}% расходов. Имеет смысл пересмотреть эту статью первой.`,
+  recOverspend: "За весь период расходы выше доходов. Сначала закройте эту разницу, иначе подушка не накопится.",
+  recOk: "Доходы покрывают расходы. Держите этот темп и не раздувайте мелкие траты.",
+  recSave: (amount: string) =>
+    `По текущему темпу в следующем месяце может остаться ${amount}. Можно сразу откладывать эту сумму.`,
+  recNeedData: "Добавьте ещё несколько месяцев операций — прогноз и советы станут точнее.",
+  recTight: (name: string) =>
+    `В этом месяце лимит по «${name}» уже под давлением. Следите за этой категорией до конца месяца.`,
+  openAnalysis: "Анализ и прогноз",
 };
 
 const en: typeof ru = {
@@ -91,6 +120,7 @@ const en: typeof ru = {
   history: "History",
   budgets: "Budgets",
   home: "Home",
+  analysis: "Insights",
   allAccounts: "All accounts",
   income: "Income",
   expense: "Expenses",
@@ -144,6 +174,33 @@ const en: typeof ru = {
   txDeleted: "Transaction deleted",
   today: "Today",
   yesterday: "Yesterday",
+  analysisAllTime: "All time",
+  analysisEmpty: "Add transactions to see where the money goes.",
+  analysisRange: (from: string, to: string) => `${from} – ${to}`,
+  analysisOps: (count: number) => (count === 1 ? "1 transaction" : `${count} transactions`),
+  leftoverAll: "All-time leftover",
+  whereMoneyGoes: "Where most money goes",
+  shareOfSpend: (pct: number) => `${pct}% of all spending`,
+  byMonth: "By month",
+  forecastTitle: "Forecast for next month",
+  forecastHint: (n: number) =>
+    n === 1
+      ? "Not much history yet — this uses the current month. An estimate, not financial advice."
+      : `Average of the last ${n} months. An estimate, not financial advice.`,
+  forecastIncome: "Expected income",
+  forecastExpense: "Expected expenses",
+  forecastLeft: "Expected leftover",
+  recommendations: "Recommendations",
+  recTop: (name: string, pct: number) =>
+    `${name} takes ${pct}% of spending. Review this category first if you want to cut costs.`,
+  recOverspend: "All-time spending is higher than income. Close that gap before trying to save.",
+  recOk: "Income covers expenses. Keep that pace and watch small leaks.",
+  recSave: (amount: string) =>
+    `At the current pace you may have ${amount} left next month. Consider setting that aside.`,
+  recNeedData: "Add a few more months of transactions so the forecast and tips get sharper.",
+  recTight: (name: string) =>
+    `This month’s ${name} limit is already tight. Watch that category until month-end.`,
+  openAnalysis: "Insights and forecast",
 };
 
 export const messages: Record<Locale, typeof ru> = { ru, en };

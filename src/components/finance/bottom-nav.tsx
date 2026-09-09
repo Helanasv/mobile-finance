@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Plus, ReceiptText, Target } from "lucide-react";
+import { ChartColumn, LayoutGrid, Plus, ReceiptText, Target } from "lucide-react";
 
 import { useT } from "@/components/finance/finance-context";
 import { cn } from "@/lib/utils";
@@ -10,17 +10,28 @@ import { cn } from "@/lib/utils";
 export function BottomNav({ onAdd }: { onAdd: () => void }) {
   const pathname = usePathname();
   const t = useT();
-  const items = [
+  const left = [
     { href: "/", label: t.home, icon: LayoutGrid },
     { href: "/history", label: t.history, icon: ReceiptText },
+  ];
+  const right = [
     { href: "/budgets", label: t.budgets, icon: Target },
+    { href: "/analysis", label: t.analysis, icon: ChartColumn },
   ];
 
   return (
-    <nav className="sticky bottom-0 z-40 px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))] pt-1">
-      <div className="relative grid grid-cols-4 items-end rounded-3xl border border-amber-200/15 bg-card/90 px-1 py-2 shadow-[0_-8px_40px_rgba(0,0,0,0.35)] backdrop-blur-md">
-        {items.slice(0, 1).map((item) => (
-          <NavLink key={item.href} {...item} active={pathname === item.href} />
+    <nav className="sticky bottom-0 z-40 px-3 pb-[max(0.85rem,env(safe-area-inset-bottom))] pt-1">
+      <div className="relative grid grid-cols-5 items-end rounded-3xl border border-amber-200/15 bg-card/90 px-0.5 py-2 shadow-[0_-8px_40px_rgba(0,0,0,0.35)] backdrop-blur-md">
+        {left.map((item) => (
+          <NavLink
+            key={item.href}
+            {...item}
+            active={
+              item.href === "/"
+                ? pathname === "/"
+                : pathname === item.href || pathname.startsWith(`${item.href}/`)
+            }
+          />
         ))}
 
         <button
@@ -32,7 +43,7 @@ export function BottomNav({ onAdd }: { onAdd: () => void }) {
           <Plus className="size-7" />
         </button>
 
-        {items.slice(1).map((item) => (
+        {right.map((item) => (
           <NavLink
             key={item.href}
             {...item}
@@ -59,7 +70,7 @@ function NavLink({
     <Link
       href={href}
       className={cn(
-        "flex flex-col items-center gap-1 py-1 text-[11px] font-medium",
+        "flex flex-col items-center gap-1 py-1 text-[10px] font-medium",
         active ? "text-primary" : "text-muted-foreground",
       )}
     >

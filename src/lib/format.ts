@@ -47,6 +47,14 @@ export function formatMonthTitle(key: string, locale: Locale = "ru") {
   }).format(parseMonthKey(key));
 }
 
+export function formatShortDate(isoDate: string, locale: Locale = "ru") {
+  return new Intl.DateTimeFormat(intlTag(locale), {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(`${isoDate}T12:00:00`));
+}
+
 export function formatDayHeading(isoDate: string, locale: Locale = "ru") {
   const date = new Date(`${isoDate}T12:00:00`);
   const today = new Date();

@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChartColumn, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { useEditTransaction } from "@/components/finance/app-shell";
@@ -124,6 +125,17 @@ export function HomeScreen() {
           </span>
         </p>
       </section>
+
+      <Link
+        href="/analysis"
+        className="flex items-center justify-between gap-3 rounded-[1.6rem] border border-amber-200/15 bg-card px-4 py-3.5"
+      >
+        <div>
+          <p className="text-sm font-medium">{t.openAnalysis}</p>
+          <p className="text-xs text-muted-foreground">{t.analysisAllTime}</p>
+        </div>
+        <ChartColumn className="size-5 text-primary" />
+      </Link>
 
       {tightBudget?.category ? (
         <section className="rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
