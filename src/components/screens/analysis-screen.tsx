@@ -11,11 +11,12 @@ import {
   allTimeInsights,
   allTimeTotals,
   categoryById,
+  compareMonths,
   forecastNextMonth,
   monthlyBreakdown,
   transactionDateRange,
 } from "@/lib/finance";
-import { formatMoney, formatMonthTitle, formatShortDate } from "@/lib/format";
+import { formatMoney, formatMonthTitle, formatShortDate, monthKey } from "@/lib/format";
 import { categoryLabel } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,7 @@ export function AnalysisScreen() {
   const months = useMemo(() => monthlyBreakdown(state).slice(-6), [state]);
   const forecast = useMemo(() => forecastNextMonth(state), [state]);
   const insights = useMemo(() => allTimeInsights(state), [state]);
+  const comparison = useMemo(() => compareMonths(state, monthKey()), [state]);
   const leftover = totals.income - totals.expense;
   const maxSpend = spend[0]?.amount ?? 0;
   const maxMonth = Math.max(1, ...months.map((row) => Math.max(row.income, row.expense)));
@@ -90,6 +92,60 @@ export function AnalysisScreen() {
                 </p>
               </div>
             </div>
+          </section>
+
+          <section className="rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
+            <p className="text-sm font-medium">{t.compareTitle}</p>
+            {!comparison.hasPrevious ? (
+              <p className="mt-3 text-sm text-muted-foreground">{t.compareEmpty}</p>
+            ) : (
+              <>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {comparison.expenseDelta > 0
+                    ? t.compareExpenseUp(
+                        formatMoney(comparison.expenseDelta, state.currency, locale),
+                      )
+                    : comparison.expenseDelta < 0
+                      ? t.compareExpenseDown(
+                          formatMoney(Math.abs(comparison.expenseDelta), state.currency, locale),
+                        )
+                      : t.compareExpenseSame}
+                </p>
+                <ul className="mt-4 space-y-3">
+                  {comparison.rows.slice(0, 6).map((row) => (
+                    <li key={row.category.id} className="flex items-center gap-3">
+                      <span
+                        className="flex size-8 items-center justify-center rounded-xl text-white"
+                        style={{ backgroundColor: row.category.color }}
+                      >
+                        <CategoryIcon name={row.category.icon} className="size-3.5" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex justify-between gap-2 text-sm">
+                          <span className="truncate">
+                            {categoryLabel(row.category.id, locale, row.category.name)}
+                          </span>
+                          <span
+                            className={cn(
+                              "shrink-0 tabular-nums",
+                              row.delta > 0 && "text-red-300",
+                              row.delta < 0 && "text-primary",
+                            )}
+                          >
+                            {row.delta > 0 ? "+" : row.delta < 0 ? "−" : ""}
+                            {formatMoney(Math.abs(row.delta), state.currency, locale)}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          {t.comparePrev} {formatMoney(row.previous, state.currency, locale)} → {t.compareNow}{" "}
+                          {formatMoney(row.current, state.currency, locale)}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </section>
 
           <section className="rounded-[1.6rem] border border-amber-200/15 bg-card p-4">

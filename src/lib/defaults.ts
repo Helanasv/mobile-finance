@@ -1,4 +1,4 @@
-import type { Budget, Category, FinanceState, Transaction } from "@/lib/types";
+import type { Budget, Category, FinanceState, Goal, Recurring, Transaction } from "@/lib/types";
 import { todayIso } from "@/lib/format";
 
 export const DEFAULT_CATEGORIES: Category[] = [
@@ -28,6 +28,18 @@ function monthDay(day: number) {
   ].join("-");
 }
 
+function lastMonthDay(day: number) {
+  const now = new Date();
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastDay = new Date(prev.getFullYear(), prev.getMonth() + 1, 0).getDate();
+  const clamped = Math.min(Math.max(1, day), lastDay);
+  return [
+    prev.getFullYear(),
+    String(prev.getMonth() + 1).padStart(2, "0"),
+    String(clamped).padStart(2, "0"),
+  ].join("-");
+}
+
 export function createSeedTransactions(): Transaction[] {
   const today = todayIso();
   return [
@@ -46,6 +58,7 @@ export function createSeedTransactions(): Transaction[] {
       amount: 42000,
       note: "Аренда квартиры",
       date: monthDay(1),
+      recurringId: "r1",
     },
     {
       id: "t3",
@@ -111,6 +124,22 @@ export function createSeedTransactions(): Transaction[] {
       note: "Аптека",
       date: monthDay(1),
     },
+    {
+      id: "t11",
+      type: "expense",
+      categoryId: "food",
+      amount: 3900,
+      note: "Продукты",
+      date: lastMonthDay(12),
+    },
+    {
+      id: "t12",
+      type: "expense",
+      categoryId: "cafe",
+      amount: 1200,
+      note: "Ужин",
+      date: lastMonthDay(18),
+    },
   ];
 }
 
@@ -122,6 +151,21 @@ export const DEFAULT_BUDGETS: Budget[] = [
   { categoryId: "fun", limit: 5000 },
 ];
 
+export const DEFAULT_GOALS: Goal[] = [
+  { id: "g1", name: "Подушка", target: 100000, saved: 20000 },
+];
+
+export const DEFAULT_RECURRINGS: Recurring[] = [
+  {
+    id: "r1",
+    type: "expense",
+    categoryId: "home",
+    amount: 42000,
+    note: "Аренда квартиры",
+    dayOfMonth: 1,
+  },
+];
+
 export function createInitialState(): FinanceState {
   return {
     locale: null,
@@ -130,5 +174,8 @@ export function createInitialState(): FinanceState {
     categories: DEFAULT_CATEGORIES,
     transactions: createSeedTransactions(),
     budgets: DEFAULT_BUDGETS,
+    goals: DEFAULT_GOALS,
+    recurrings: DEFAULT_RECURRINGS,
+    monthLimit: 70000,
   };
 }

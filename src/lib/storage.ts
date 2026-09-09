@@ -22,6 +22,12 @@ export function loadState(): FinanceState {
       categories: parsed.categories,
       transactions: parsed.transactions,
       budgets: parsed.budgets ?? [],
+      goals: Array.isArray(parsed.goals) ? parsed.goals : [],
+      recurrings: Array.isArray(parsed.recurrings) ? parsed.recurrings : [],
+      monthLimit:
+        typeof parsed.monthLimit === "number" && parsed.monthLimit >= 0
+          ? parsed.monthLimit
+          : 0,
     };
   } catch {
     return createInitialState();

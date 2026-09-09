@@ -20,6 +20,23 @@ export type Transaction = {
   amount: number;
   note: string;
   date: string;
+  recurringId?: string;
+};
+
+export type Goal = {
+  id: string;
+  name: string;
+  target: number;
+  saved: number;
+};
+
+export type Recurring = {
+  id: string;
+  type: TransactionType;
+  categoryId: string;
+  amount: number;
+  note: string;
+  dayOfMonth: number;
 };
 
 export type Budget = {
@@ -34,4 +51,7 @@ export type FinanceState = {
   categories: Category[];
   transactions: Transaction[];
   budgets: Budget[];
+  goals: Goal[];
+  recurrings: Recurring[];
+  monthLimit: number;
 };

@@ -1,5 +1,6 @@
-import { inMonth, monthKey, shiftMonth } from "@/lib/format";
-import type { Category, FinanceState, Transaction, TransactionType } from "@/lib/types";
+import { inMonth, isoDateInMonth, monthKey, shiftMonth, todayIso } from "@/lib/format";
+import { categoryLabel } from "@/lib/i18n";
+import type { Category, FinanceState, Goal, Transaction, TransactionType } from "@/lib/types";
 
 export function monthTotals(state: FinanceState, month: string) {
   return state.transactions.reduce(
@@ -189,4 +190,111 @@ export function allTimeInsights(state: FinanceState): Insight[] {
   }
 
   return insights.slice(0, 4);
+}
+
+export function withDueRecurring(state: FinanceState, today = todayIso()): FinanceState {
+  const month = today.slice(0, 7);
+  const extra: Transaction[] = [];
+
+  for (const rec of state.recurrings) {
+    const date = isoDateInMonth(month, rec.dayOfMonth);
+    if (date > today) continue;
+    const already = state.transactions.some(
+      (tx) => tx.recurringId === rec.id && tx.date.startsWith(month),
+    );
+    if (already) continue;
+    extra.push({
+      id: crypto.randomUUID(),
+      type: rec.type,
+      categoryId: rec.categoryId,
+      amount: rec.amount,
+      note: rec.note,
+      date,
+      recurringId: rec.id,
+    });
+  }
+
+  if (extra.length === 0) return state;
+  return { ...state, transactions: [...extra, ...state.transactions] };
+}
+
+export function monthsToGoal(goal: Goal, monthlyLeftover: number) {
+  const need = goal.target - goal.saved;
+  if (need <= 0) return 0;
+  if (monthlyLeftover <= 0) return null;
+  return Math.ceil(need / monthlyLeftover);
+}
+
+export function compareMonths(state: FinanceState, current: string) {
+  const prev = shiftMonth(current, -1);
+  const now = monthTotals(state, current);
+  const before = monthTotals(state, prev);
+  const nowSpend = categorySpend(state, current, "expense");
+  const prevSpend = categorySpend(state, prev, "expense");
+  const prevMap = new Map(prevSpend.map((row) => [row.category.id, row.amount]));
+  const seen = new Set<string>();
+  const rows: {
+    category: Category;
+    current: number;
+    previous: number;
+    delta: number;
+  }[] = [];
+
+  for (const row of nowSpend) {
+    seen.add(row.category.id);
+    const previous = prevMap.get(row.category.id) ?? 0;
+    rows.push({
+      category: row.category,
+      current: row.amount,
+      previous,
+      delta: row.amount - previous,
+    });
+  }
+
+  for (const row of prevSpend) {
+    if (seen.has(row.category.id)) continue;
+    rows.push({
+      category: row.category,
+      current: 0,
+      previous: row.amount,
+      delta: -row.amount,
+    });
+  }
+
+  rows.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+
+  return {
+    current,
+    prev,
+    now,
+    before,
+    expenseDelta: now.expense - before.expense,
+    incomeDelta: now.income - before.income,
+    rows,
+    hasPrevious: state.transactions.some((tx) => inMonth(tx.date, prev)),
+  };
+}
+
+export function transactionsToCsv(state: FinanceState, locale: "ru" | "en") {
+  const header = ["date", "type", "category", "amount", "note"];
+  const lines = [header.join(",")];
+  const sorted = [...state.transactions].sort((a, b) => a.date.localeCompare(b.date));
+  for (const tx of sorted) {
+    const category = categoryById(state, tx.categoryId);
+    const name = category ? categoryLabel(category.id, locale, category.name) : tx.categoryId;
+    const cells = [
+      tx.date,
+      tx.type,
+      csvCell(name),
+      String(tx.amount),
+      csvCell(tx.note),
+    ];
+    lines.push(cells.join(","));
+  }
+  return `\uFEFF${lines.join("\n")}`;
+}
+
+function csvCell(value: string) {
+  if (/[",\n]/.test(value)) return `"${value.replaceAll('"', '""')}"`;
+  return value;
 }

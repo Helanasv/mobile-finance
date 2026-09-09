@@ -98,3 +98,19 @@ export function shiftMonth(key: string, delta: number) {
 export function inMonth(isoDate: string, key: string) {
   return isoDate.startsWith(key);
 }
+
+export function parseAmount(raw: string) {
+  const value = Number(raw.replace(",", ".").replace(/\s/g, ""));
+  if (!Number.isFinite(value)) return NaN;
+  return Math.round(value * 100) / 100;
+}
+
+export function monthLastDay(key: string) {
+  const date = parseMonthKey(key);
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+}
+
+export function isoDateInMonth(key: string, day: number) {
+  const clamped = Math.min(Math.max(1, day), monthLastDay(key));
+  return `${key}-${String(clamped).padStart(2, "0")}`;
+}

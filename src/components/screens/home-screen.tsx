@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartColumn, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChartColumn, ChevronLeft, ChevronRight, PiggyBank, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -118,6 +118,44 @@ export function HomeScreen() {
           </span>
         </p>
       </section>
+
+      {state.monthLimit > 0 ? (
+        <section className="rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
+          <p className="text-sm font-medium">{t.monthLimit}</p>
+          <div className="mt-2 flex justify-between text-sm tabular-nums">
+            <span className="text-muted-foreground">
+              {t.monthLimitOf(
+                formatMoney(totals.expense, state.currency, locale),
+                formatMoney(state.monthLimit, state.currency, locale),
+              )}
+            </span>
+          </div>
+          <Progress
+            className="mt-2 h-1.5"
+            value={Math.min(100, (totals.expense / state.monthLimit) * 100)}
+          />
+          {totals.expense > state.monthLimit ? (
+            <p className="mt-2 text-xs text-destructive">{t.monthLimitOver}</p>
+          ) : totals.expense / state.monthLimit >= 0.8 ? (
+            <p className="mt-2 text-xs text-primary">{t.monthLimitTight}</p>
+          ) : null}
+        </section>
+      ) : null}
+
+      <Link
+        href="/goals"
+        className="flex items-center justify-between gap-3 rounded-[1.6rem] border border-amber-200/15 bg-card px-4 py-3.5"
+      >
+        <div>
+          <p className="text-sm font-medium">{t.openGoals}</p>
+          <p className="text-xs text-muted-foreground">
+            {state.goals[0]
+              ? `${state.goals[0].name} · ${formatMoney(state.goals[0].saved, state.currency, locale)} / ${formatMoney(state.goals[0].target, state.currency, locale)}`
+              : t.goalsHint}
+          </p>
+        </div>
+        <PiggyBank className="size-5 text-primary" />
+      </Link>
 
       <Link
         href="/analysis"

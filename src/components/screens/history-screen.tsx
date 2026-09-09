@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { useEditTransaction } from "@/components/finance/app-shell";
 import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { TransactionRow } from "@/components/finance/transaction-row";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { categoryById, groupedTransactions } from "@/lib/finance";
+import { categoryById, groupedTransactions, transactionsToCsv } from "@/lib/finance";
 import { formatDayHeading } from "@/lib/format";
 import { categoryLabel } from "@/lib/i18n";
 import type { TransactionType } from "@/lib/types";
@@ -52,6 +54,28 @@ export function HistoryScreen() {
         </p>
         <h1 className="font-display text-3xl font-medium tracking-tight">{t.history}</h1>
       </header>
+
+      <Button
+        variant="outline"
+        className="h-11 w-full rounded-2xl"
+        onClick={() => {
+          if (state.transactions.length === 0) {
+            toast.error(t.exportEmpty);
+            return;
+          }
+          const csv = transactionsToCsv(state, locale);
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = "dostatok.csv";
+          link.click();
+          URL.revokeObjectURL(url);
+          toast.success(t.exportDone);
+        }}
+      >
+        {t.exportCsv}
+      </Button>
 
       <Input
         value={query}

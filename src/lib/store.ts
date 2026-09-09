@@ -1,4 +1,5 @@
 import { createInitialState } from "@/lib/defaults";
+import { withDueRecurring } from "@/lib/finance";
 import { loadState, saveState } from "@/lib/storage";
 import type { FinanceState } from "@/lib/types";
 
@@ -16,7 +17,10 @@ export function subscribeFinance(listener: () => void) {
 }
 
 export function getFinanceSnapshot(): FinanceState {
-  if (!snapshot) snapshot = loadState();
+  if (!snapshot) {
+    snapshot = withDueRecurring(loadState());
+    saveState(snapshot);
+  }
   return snapshot;
 }
 
