@@ -25,7 +25,7 @@ export function categoryLabel(id: string, locale: Locale, fallback?: string) {
 }
 
 const ru = {
-  appName: "Ауреа",
+  appName: "Достаток",
   balance: "Баланс",
   history: "История",
   budgets: "Бюджеты",
@@ -119,7 +119,7 @@ const ru = {
 };
 
 const en: typeof ru = {
-  appName: "Aurea",
+  appName: "Dostatok",
   balance: "Balance",
   history: "History",
   budgets: "Budgets",

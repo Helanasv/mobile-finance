@@ -18,12 +18,12 @@ const notoSerif = Noto_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Ауреа — личные финансы",
+  title: "Достаток — учёт доходов и расходов",
   description:
     "Мобильное приложение для учёта доходов, расходов и месячных бюджетов.",
   appleWebApp: {
     capable: true,
-    title: "Ауреа",
+    title: "Достаток",
     statusBarStyle: "black-translucent",
   },
 };

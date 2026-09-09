@@ -19,10 +19,10 @@ export function LanguageScreen() {
     <div className="flex flex-1 flex-col justify-center gap-8 px-1 py-10">
       <div className="text-center">
         <span className="mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl border border-amber-200/20 bg-primary/15 font-display text-2xl text-primary">
-          А
+          Д
         </span>
         <p className="text-sm tracking-[0.2em] text-primary/80 uppercase">
-          Ауреа · Aurea
+          Достаток · Dostatok
         </p>
         {step === "language" ? (
           <>
