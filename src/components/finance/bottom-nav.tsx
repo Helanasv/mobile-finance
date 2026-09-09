@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChartColumn, LayoutGrid, Plus, ReceiptText, Target } from "lucide-react";
+import { LayoutGrid, PiggyBank, Plus, ReceiptText, Target } from "lucide-react";
 
 import { useT } from "@/components/finance/finance-context";
 import { cn } from "@/lib/utils";
@@ -15,8 +15,8 @@ export function BottomNav({ onAdd }: { onAdd: () => void }) {
     { href: "/history", label: t.history, icon: ReceiptText },
   ];
   const right = [
+    { href: "/goals", label: t.goals, icon: PiggyBank },
     { href: "/budgets", label: t.budgets, icon: Target },
-    { href: "/analysis", label: t.analysis, icon: ChartColumn },
   ];
 
   return (

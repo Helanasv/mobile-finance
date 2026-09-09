@@ -119,6 +119,23 @@ export function HomeScreen() {
         </p>
       </section>
 
+      <Link
+        href="/goals"
+        className="flex items-center gap-3 rounded-[1.6rem] border border-amber-200/20 bg-card px-4 py-4"
+      >
+        <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+          <PiggyBank className="size-6" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-display text-xl font-medium tracking-tight">{t.goals}</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {state.goals[0]
+              ? `${state.goals[0].name} · ${formatMoney(state.goals[0].saved, state.currency, locale)} / ${formatMoney(state.goals[0].target, state.currency, locale)}`
+              : t.goalsHint}
+          </p>
+        </div>
+      </Link>
+
       {state.monthLimit > 0 ? (
         <section className="rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
           <p className="text-sm font-medium">{t.monthLimit}</p>
@@ -141,21 +158,6 @@ export function HomeScreen() {
           ) : null}
         </section>
       ) : null}
-
-      <Link
-        href="/goals"
-        className="flex items-center justify-between gap-3 rounded-[1.6rem] border border-amber-200/15 bg-card px-4 py-3.5"
-      >
-        <div>
-          <p className="text-sm font-medium">{t.openGoals}</p>
-          <p className="text-xs text-muted-foreground">
-            {state.goals[0]
-              ? `${state.goals[0].name} · ${formatMoney(state.goals[0].saved, state.currency, locale)} / ${formatMoney(state.goals[0].target, state.currency, locale)}`
-              : t.goalsHint}
-          </p>
-        </div>
-        <PiggyBank className="size-5 text-primary" />
-      </Link>
 
       <Link
         href="/analysis"
