@@ -4,8 +4,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { CategoryIcon } from "@/components/finance/category-icon";
-import { CurrencySwitcher } from "@/components/finance/currency-switcher";
-import { LanguageSwitcher } from "@/components/finance/language-switcher";
 import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +18,7 @@ import { categoryLabel } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export function BudgetsScreen() {
-  const { ready, state, upsertBudget, setCurrency, resetDemo, clearAll } = useFinance();
+  const { ready, state, upsertBudget, resetDemo, clearAll } = useFinance();
   const t = useT();
   const locale = useLocale();
   const month = monthKey();
@@ -52,17 +50,6 @@ export function BudgetsScreen() {
           {formatMonthTitle(month, locale)}
         </p>
       </header>
-
-      <section className="space-y-2">
-        <p className="text-sm font-medium">{t.language}</p>
-        <LanguageSwitcher />
-      </section>
-
-      <section className="space-y-2">
-        <p className="text-sm font-medium">{t.currency}</p>
-        <CurrencySwitcher value={state.currency} onChange={setCurrency} />
-        <p className="text-xs text-muted-foreground">{t.currencyHint}</p>
-      </section>
 
       <section className="rounded-3xl border p-4">
         <p className="text-sm text-muted-foreground">{t.spendByCategory}</p>

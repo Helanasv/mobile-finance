@@ -18,6 +18,7 @@ export function loadState(): FinanceState {
     return {
       locale: isLocale(parsed.locale) ? parsed.locale : null,
       currency: isCurrency(parsed.currency) ? parsed.currency : "RUB",
+      setupComplete: parsed.setupComplete === true,
       categories: parsed.categories,
       transactions: parsed.transactions,
       budgets: parsed.budgets ?? [],

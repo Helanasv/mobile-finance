@@ -21,6 +21,7 @@ type FinanceContextValue = {
   upsertBudget: (budget: Budget) => void;
   setCurrency: (currency: Currency) => void;
   setLocale: (locale: Locale) => void;
+  completeSetup: (locale: Locale, currency: Currency) => void;
   resetDemo: () => void;
   clearAll: () => void;
 };
@@ -80,11 +81,16 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setFinanceState((current) => ({ ...current, locale }));
   }, []);
 
+  const completeSetup = useCallback((locale: Locale, currency: Currency) => {
+    setFinanceState((current) => ({ ...current, locale, currency, setupComplete: true }));
+  }, []);
+
   const resetDemo = useCallback(() => {
     setFinanceState((current) => ({
       ...createInitialState(),
       currency: current.currency,
       locale: current.locale,
+      setupComplete: current.setupComplete,
     }));
   }, []);
 
@@ -92,6 +98,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setFinanceState((current) => ({
       locale: current.locale,
       currency: current.currency,
+      setupComplete: current.setupComplete,
       categories: createInitialState().categories,
       transactions: [],
       budgets: [],
@@ -108,6 +115,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       upsertBudget,
       setCurrency,
       setLocale,
+      completeSetup,
       resetDemo,
       clearAll,
     }),
@@ -120,6 +128,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       upsertBudget,
       setCurrency,
       setLocale,
+      completeSetup,
       resetDemo,
       clearAll,
     ],

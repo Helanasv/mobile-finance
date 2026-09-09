@@ -30,6 +30,7 @@ export type Budget = {
 export type FinanceState = {
   locale: Locale | null;
   currency: Currency;
+  setupComplete: boolean;
   categories: Category[];
   transactions: Transaction[];
   budgets: Budget[];

@@ -6,7 +6,6 @@ import { useMemo, useState } from "react";
 
 import { useEditTransaction } from "@/components/finance/app-shell";
 import { CategoryIcon } from "@/components/finance/category-icon";
-import { CurrencySwitcher } from "@/components/finance/currency-switcher";
 import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { TransactionRow } from "@/components/finance/transaction-row";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,7 @@ import {
 import { categoryLabel } from "@/lib/i18n";
 
 export function HomeScreen() {
-  const { ready, state, setCurrency } = useFinance();
+  const { ready, state } = useFinance();
   const t = useT();
   const locale = useLocale();
   const edit = useEditTransaction();
@@ -93,13 +92,7 @@ export function HomeScreen() {
         <div className="absolute top-0 left-0 h-full w-1.5 bg-primary" />
         <div className="flex items-start justify-between gap-3 pl-2">
           <p className="text-sm font-medium text-amber-100/70">{t.allAccounts}</p>
-          <div className="w-[11.5rem]">
-            <CurrencySwitcher
-              value={state.currency}
-              onChange={setCurrency}
-              variant="on-gradient"
-            />
-          </div>
+          <p className="text-sm font-medium text-amber-100/70">{state.currency}</p>
         </div>
         <p className="mt-4 pl-2 font-display text-[2.35rem] leading-none font-medium tracking-tight tabular-nums">
           {formatMoney(balance, state.currency, locale)}

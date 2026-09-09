@@ -126,6 +126,7 @@ export function createInitialState(): FinanceState {
   return {
     locale: null,
     currency: "RUB",
+    setupComplete: false,
     categories: DEFAULT_CATEGORIES,
     transactions: createSeedTransactions(),
     budgets: DEFAULT_BUDGETS,

@@ -2,14 +2,14 @@ export type Currency = "RUB" | "USD" | "BYN" | "EUR";
 
 export const CURRENCIES: {
   code: Currency;
-  label: string;
+  label: Record<"ru" | "en", string>;
   short: string;
   symbol: string;
 }[] = [
-  { code: "RUB", label: "Российский рубль", short: "RUB", symbol: "₽" },
-  { code: "USD", label: "Доллар США", short: "USD", symbol: "$" },
-  { code: "BYN", label: "Белорусский рубль", short: "BYN", symbol: "Br" },
-  { code: "EUR", label: "Евро", short: "EUR", symbol: "€" },
+  { code: "RUB", label: { ru: "Российский рубль", en: "Russian ruble" }, short: "RUB", symbol: "₽" },
+  { code: "USD", label: { ru: "Доллар США", en: "US dollar" }, short: "USD", symbol: "$" },
+  { code: "BYN", label: { ru: "Белорусский рубль", en: "Belarusian ruble" }, short: "BYN", symbol: "Br" },
+  { code: "EUR", label: { ru: "Евро", en: "Euro" }, short: "EUR", symbol: "€" },
 ];
 
 const CODES = new Set<string>(CURRENCIES.map((item) => item.code));
