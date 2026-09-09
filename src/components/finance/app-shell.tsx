@@ -54,7 +54,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         ) : (
           <>
             <TransactionForm
-              key={editing?.id ?? "new"}
+              key={`${editing?.id ?? "new"}-${open ? "open" : "closed"}`}
               open={open}
               initial={editing}
               onOpenChange={(next) => {

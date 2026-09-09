@@ -95,6 +95,9 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
     } else {
       addTransaction(payload);
       toast.success(type === "income" ? t.incomeSaved : t.expenseSaved);
+      setAmount("");
+      setNote("");
+      setDate(todayIso());
     }
     onOpenChange(false);
   }
