@@ -18,7 +18,11 @@ export function subscribeFinance(listener: () => void) {
 
 export function getFinanceSnapshot(): FinanceState {
   if (!snapshot) {
-    snapshot = withDueRecurring(loadState());
+    try {
+      snapshot = withDueRecurring(loadState());
+    } catch {
+      snapshot = loadState();
+    }
     saveState(snapshot);
   }
   return snapshot;

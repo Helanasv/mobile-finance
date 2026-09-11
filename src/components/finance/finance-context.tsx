@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useSyncExternalStore } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { createInitialState } from "@/lib/defaults";
 import { withDueRecurring } from "@/lib/finance";
@@ -43,10 +43,11 @@ type FinanceContextValue = {
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
 
-const emptySubscribe = () => () => {};
-
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
-  const ready = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    setReady(true);
+  }, []);
   const state = useSyncExternalStore(
     subscribeFinance,
     getFinanceSnapshot,

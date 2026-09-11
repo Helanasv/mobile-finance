@@ -21,11 +21,11 @@ export function overallBalance(state: FinanceState) {
 }
 
 export function categoryById(state: FinanceState, id: string) {
-  return state.categories.find((category) => category.id === id);
+  return (state.categories ?? []).find((category) => category.id === id);
 }
 
 export function spentInCategory(state: FinanceState, categoryId: string, month: string) {
-  return state.transactions
+  return (state.transactions ?? [])
     .filter(
       (tx) =>
         tx.type === "expense" &&
@@ -196,7 +196,7 @@ export function withDueRecurring(state: FinanceState, today = todayIso()): Finan
   const month = today.slice(0, 7);
   const extra: Transaction[] = [];
 
-  for (const rec of state.recurrings) {
+  for (const rec of state.recurrings ?? []) {
     const date = isoDateInMonth(month, rec.dayOfMonth);
     if (date > today) continue;
     const already = state.transactions.some(
