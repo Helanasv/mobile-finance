@@ -29,6 +29,10 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const needsSetup = ready && !state.setupComplete;
 
   useEffect(() => {
+    document.getElementById("dostatok-boot")?.remove();
+  }, []);
+
+  useEffect(() => {
     if (state.locale) {
       document.documentElement.lang = state.locale;
     }

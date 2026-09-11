@@ -40,6 +40,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ru" className={`${manrope.variable} ${notoSerif.variable} h-full dark antialiased`}>
       <body className="min-h-full bg-background font-sans text-foreground">
+        <p
+          id="dostatok-boot"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1a1612] p-6 text-center text-lg leading-relaxed text-[#f6e7c8]"
+        >
+          Достаток загружается. Если экран пустой — в Safari откройте http://localhost:43123
+        </p>
         <AppShell>{children}</AppShell>
         <Toaster position="top-center" />
       </body>
