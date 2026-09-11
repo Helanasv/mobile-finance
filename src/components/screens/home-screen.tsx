@@ -10,14 +10,17 @@ import { TransactionRow } from "@/components/finance/transaction-row";
 import { Button } from "@/components/ui/button";
 import {
   categoryById,
+  cushionDays,
   groupedTransactions,
   monthTotals,
   overallBalance,
+  spendableUntilPayday,
 } from "@/lib/finance";
 import {
   formatDayHeading,
   formatMoney,
   formatMonthTitle,
+  formatShortDate,
   inMonth,
   monthKey,
   shiftMonth,
@@ -40,6 +43,9 @@ export function HomeScreen() {
   );
   const recentGroups = groupedTransactions(monthTransactions).slice(0, 4);
   const displayName = state.displayName?.trim() ?? "";
+  const free = useMemo(() => spendableUntilPayday(state), [state]);
+  const cushion = useMemo(() => cushionDays(state), [state]);
+  const committed = free.reservedGoals + free.upcomingExpense;
 
   if (!ready) {
     return <ScreenSkeleton />;
@@ -119,6 +125,37 @@ export function HomeScreen() {
         </p>
       </section>
 
+      <section className="rounded-[1.6rem] border border-amber-200/20 bg-card p-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+          {t.freeUntilPayday}
+        </p>
+        {free.spendable > 0 ? (
+          <>
+            <p className="font-display mt-2 text-[2rem] leading-tight font-medium tracking-tight tabular-nums">
+              {formatMoney(free.spendable, state.currency, locale)}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t.freeUntilHint(formatShortDate(free.nextPayday, locale), t.daysLabel(free.daysLeft))}
+            </p>
+            {free.perDay != null && free.perDay > 0 ? (
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t.freePerDay(formatMoney(free.perDay, state.currency, locale))}
+              </p>
+            ) : null}
+            {committed > 0 ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t.freeCommitted(formatMoney(committed, state.currency, locale))}
+              </p>
+            ) : null}
+          </>
+        ) : (
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.freeNone}</p>
+        )}
+        <Link href="/settings" className="mt-3 inline-block text-sm text-primary">
+          {t.freeChangePayday}
+        </Link>
+      </section>
+
       <Link
         href="/goals"
         className="flex shrink-0 items-center gap-3 rounded-[1.6rem] border border-amber-200/20 bg-card px-4 py-4"
@@ -129,10 +166,17 @@ export function HomeScreen() {
         <div className="min-w-0 flex-1">
           <p className="font-display text-xl font-medium tracking-tight">{t.goals}</p>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {goals[0]
-              ? `${goals[0].name} · ${formatMoney(goals[0].saved, state.currency, locale)} / ${formatMoney(goals[0].target, state.currency, locale)}`
-              : t.goalsHint}
+            {cushion.days != null
+              ? t.cushionDaysLine(cushion.days)
+              : goals[0]
+                ? `${goals[0].name} · ${formatMoney(goals[0].saved, state.currency, locale)} / ${formatMoney(goals[0].target, state.currency, locale)}`
+                : t.goalsHint}
           </p>
+          {cushion.days != null && cushion.goal ? (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {cushion.goal.name} · {formatMoney(cushion.saved, state.currency, locale)}
+            </p>
+          ) : null}
         </div>
       </Link>
 

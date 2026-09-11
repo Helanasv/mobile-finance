@@ -114,3 +114,23 @@ export function isoDateInMonth(key: string, day: number) {
   const clamped = Math.min(Math.max(1, day), monthLastDay(key));
   return `${key}-${String(clamped).padStart(2, "0")}`;
 }
+
+export function parseIsoDate(isoDate: string) {
+  return new Date(`${isoDate}T12:00:00`);
+}
+
+export function addDaysIso(isoDate: string, days: number) {
+  const date = parseIsoDate(isoDate);
+  date.setDate(date.getDate() + days);
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+export function daysBetween(fromIso: string, toIso: string) {
+  const from = parseIsoDate(fromIso).getTime();
+  const to = parseIsoDate(toIso).getTime();
+  return Math.round((to - from) / 86_400_000);
+}

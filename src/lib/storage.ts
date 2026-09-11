@@ -3,6 +3,12 @@ import { isCurrency } from "@/lib/currency";
 import { isLocale } from "@/lib/i18n";
 import type { FinanceState } from "@/lib/types";
 
+function clampPayday(value: unknown) {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 28
+    ? value
+    : 1;
+}
+
 export const STORAGE_KEY = "karman-finance-v2";
 
 export function loadState(): FinanceState {
@@ -26,6 +32,7 @@ export function loadState(): FinanceState {
       recurrings: Array.isArray(parsed.recurrings) ? parsed.recurrings : [],
       monthLimit: 0,
       budgets: [],
+      paydayDay: clampPayday(parsed.paydayDay),
     };
   } catch {
     return createInitialState();

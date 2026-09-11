@@ -1,4 +1,4 @@
-import { inMonth, isoDateInMonth, monthKey, shiftMonth, todayIso } from "@/lib/format";
+import { addDaysIso, daysBetween, inMonth, isoDateInMonth, monthKey, shiftMonth, todayIso } from "@/lib/format";
 import { categoryLabel } from "@/lib/i18n";
 import type { Category, FinanceState, Goal, Transaction, TransactionType } from "@/lib/types";
 
@@ -283,4 +283,140 @@ export function transactionsToCsv(state: FinanceState, locale: "ru" | "en") {
 function csvCell(value: string) {
   if (/[",\n]/.test(value)) return `"${value.replaceAll('"', '""')}"`;
   return value;
+}
+
+export function clampPaydayDay(value: unknown) {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 28
+    ? value
+    : 1;
+}
+
+export function lastPaydayIso(today: string, paydayDay: number) {
+  const day = clampPaydayDay(paydayDay);
+  const thisPay = isoDateInMonth(today.slice(0, 7), day);
+  if (today >= thisPay) return thisPay;
+  return isoDateInMonth(shiftMonth(today.slice(0, 7), -1), day);
+}
+
+export function nextPaydayIso(today: string, paydayDay: number) {
+  const day = clampPaydayDay(paydayDay);
+  const thisPay = isoDateInMonth(today.slice(0, 7), day);
+  if (today < thisPay) return thisPay;
+  return isoDateInMonth(shiftMonth(today.slice(0, 7), 1), day);
+}
+
+function monthKeysUntil(fromIso: string, toIso: string) {
+  const keys: string[] = [];
+  let key = fromIso.slice(0, 7);
+  const end = toIso.slice(0, 7);
+  while (key <= end) {
+    keys.push(key);
+    key = shiftMonth(key, 1);
+  }
+  return keys;
+}
+
+function upcomingRecurring(state: FinanceState, today: string, nextPayday: string) {
+  let expense = 0;
+  let income = 0;
+  const months = monthKeysUntil(today, nextPayday);
+  for (const rec of state.recurrings ?? []) {
+    for (const month of months) {
+      const date = isoDateInMonth(month, rec.dayOfMonth);
+      if (date <= today || date >= nextPayday) continue;
+      const already = (state.transactions ?? []).some(
+        (tx) => tx.recurringId === rec.id && tx.date === date,
+      );
+      if (already) continue;
+      if (rec.type === "expense") expense += rec.amount;
+      else income += rec.amount;
+    }
+  }
+  return { expense, income };
+}
+
+export function reservedInGoals(state: FinanceState) {
+  return (state.goals ?? []).reduce((sum, goal) => sum + goal.saved, 0);
+}
+
+export type SpendableUntilPayday = {
+  lastPayday: string;
+  nextPayday: string;
+  daysLeft: number;
+  reservedGoals: number;
+  upcomingExpense: number;
+  upcomingIncome: number;
+  spendable: number;
+  perDay: number | null;
+};
+
+export function spendableUntilPayday(
+  state: FinanceState,
+  today = todayIso(),
+): SpendableUntilPayday {
+  const paydayDay = clampPaydayDay(state.paydayDay);
+  const lastPayday = lastPaydayIso(today, paydayDay);
+  const nextPayday = nextPaydayIso(today, paydayDay);
+  const daysLeft = Math.max(0, daysBetween(today, nextPayday));
+  const reservedGoals = reservedInGoals(state);
+  const upcoming = upcomingRecurring(state, today, nextPayday);
+  const raw =
+    overallBalance(state) - reservedGoals - upcoming.expense + upcoming.income;
+  const spendable = Math.round(raw * 100) / 100;
+  return {
+    lastPayday,
+    nextPayday,
+    daysLeft,
+    reservedGoals,
+    upcomingExpense: upcoming.expense,
+    upcomingIncome: upcoming.income,
+    spendable,
+    perDay: daysLeft > 0 ? Math.round((spendable / daysLeft) * 100) / 100 : null,
+  };
+}
+
+export function averageDailySpend(state: FinanceState, today = todayIso()) {
+  const from = addDaysIso(today, -29);
+  const expenses = (state.transactions ?? []).filter(
+    (tx) => tx.type === "expense" && tx.date >= from && tx.date <= today,
+  );
+  if (expenses.length === 0) return null;
+  const sum = expenses.reduce((total, tx) => total + tx.amount, 0);
+  const earliest = expenses.reduce((min, tx) => (tx.date < min ? tx.date : min), today);
+  const span = Math.max(1, daysBetween(earliest, today) + 1);
+  return Math.round((sum / span) * 100) / 100;
+}
+
+export function cushionGoal(state: FinanceState) {
+  const goals = state.goals ?? [];
+  if (goals.length === 0) return null;
+  const named = goals.find((goal) =>
+    /подушк|cushion|emergency|reserve/i.test(goal.name),
+  );
+  return named ?? goals[0];
+}
+
+export function daysOfHabit(saved: number, dailySpend: number | null) {
+  if (dailySpend == null || dailySpend <= 0 || saved <= 0) return null;
+  const days = Math.floor(saved / dailySpend);
+  return Math.min(days, 999);
+}
+
+export type CushionView = {
+  goal: Goal | null;
+  saved: number;
+  dailySpend: number | null;
+  days: number | null;
+};
+
+export function cushionDays(state: FinanceState, today = todayIso()): CushionView {
+  const goal = cushionGoal(state);
+  const dailySpend = averageDailySpend(state, today);
+  const saved = goal?.saved ?? 0;
+  return {
+    goal,
+    saved,
+    dailySpend,
+    days: daysOfHabit(saved, dailySpend),
+  };
 }

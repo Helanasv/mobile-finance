@@ -35,10 +35,38 @@ const ru = {
   income: "Доходы",
   expense: "Расходы",
   leftover: "За месяц осталось",
+  payday: "День зарплаты",
+  paydayHint: "Свободные деньги считаем от этой даты до следующей зарплаты.",
+  paydayPlaceholder: "Число, 1–28",
+  paydaySaved: "День зарплаты сохранён",
+  paydayError: "Укажите день от 1 до 28",
+  freeUntilPayday: "Свободные до зарплаты",
+  freeUntilHint: (date: string, days: string) => `Следующая зарплата ${date} · ещё ${days}`,
+  freePerDay: (amount: string) => `${amount} в день, если тратить ровно`,
+  freeCommitted: (amount: string) => `Отложено в копилку и на платежи до зарплаты: ${amount}`,
+  freeNone: "До зарплаты свободных денег нет: копилка и обещанные платежи закрывают остаток.",
+  freeChangePayday: "Изменить день зарплаты",
+  daysLabel: (n: number) => {
+    const abs = Math.abs(n) % 100;
+    const last = abs % 10;
+    const word =
+      abs > 10 && abs < 20 ? "дней" : last === 1 ? "день" : last >= 2 && last <= 4 ? "дня" : "дней";
+    return `${n} ${word}`;
+  },
+  cushionDaysTitle: "Дни подушки",
+  cushionDaysLine: (n: number) => {
+    const abs = Math.abs(n) % 100;
+    const last = abs % 10;
+    const word =
+      abs > 10 && abs < 20 ? "дней" : last === 1 ? "день" : last >= 2 && last <= 4 ? "дня" : "дней";
+    return `${n} ${word} привычной жизни`;
+  },
+  cushionDaysUnknown: "Нужны расходы за последние недели, чтобы перевести подушку в дни.",
+  cushionDaysEmpty: "Отложите в копилку — покажем, на сколько дней жизни этого хватит.",
   hello: (name: string) => `Привет, ${name}`,
   helloDefault: "Привет",
   settings: "Настройки",
-  settingsHint: "Имя, язык и валюта. Можно менять в любой момент.",
+  settingsHint: "Имя, день зарплаты, язык и валюта. Можно менять в любой момент.",
   yourName: "Как к вам обращаться",
   nameHint: "Имя появится на главной: «Привет, …». Хранится только в этом браузере.",
   namePlaceholder: "Имя или как удобно",
@@ -180,10 +208,27 @@ const en: typeof ru = {
   income: "Income",
   expense: "Expenses",
   leftover: "Left this month",
+  payday: "Payday",
+  paydayHint: "Spendable money is counted from this date until the next payday.",
+  paydayPlaceholder: "Day, 1–28",
+  paydaySaved: "Payday saved",
+  paydayError: "Enter a day from 1 to 28",
+  freeUntilPayday: "Spendable until payday",
+  freeUntilHint: (date: string, days: string) => `Next payday ${date} · ${days} left`,
+  freePerDay: (amount: string) => `${amount} per day if you spend evenly`,
+  freeCommitted: (amount: string) => `Set aside for goals and bills before payday: ${amount}`,
+  freeNone: "Nothing spendable before payday: goals and upcoming bills cover the rest.",
+  freeChangePayday: "Change payday",
+  daysLabel: (n: number) => (n === 1 ? "1 day" : `${n} days`),
+  cushionDaysTitle: "Cushion days",
+  cushionDaysLine: (n: number) =>
+    n === 1 ? "1 day of usual spending" : `${n} days of usual spending`,
+  cushionDaysUnknown: "Need a few weeks of expenses to turn the cushion into days.",
+  cushionDaysEmpty: "Put money in a goal — we’ll show how many days of life it covers.",
   hello: (name: string) => `Hi, ${name}`,
   helloDefault: "Hi",
   settings: "Settings",
-  settingsHint: "Name, language, and currency. Change them anytime.",
+  settingsHint: "Name, payday, language, and currency. Change them anytime.",
   yourName: "What should we call you",
   nameHint: "The name shows on the home screen as “Hi, …”. Stored only in this browser.",
   namePlaceholder: "Your name or a nickname",

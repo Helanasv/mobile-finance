@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { createInitialState } from "@/lib/defaults";
-import { withDueRecurring } from "@/lib/finance";
+import { clampPaydayDay, withDueRecurring } from "@/lib/finance";
 import {
   getFinanceSnapshot,
   getServerFinanceSnapshot,
@@ -34,6 +34,7 @@ type FinanceContextValue = {
   setCurrency: (currency: Currency) => void;
   setLocale: (locale: Locale) => void;
   setDisplayName: (displayName: string) => void;
+  setPaydayDay: (day: number) => void;
   completeSetup: (locale: Locale, currency: Currency) => void;
   resetDemo: () => void;
   clearAll: () => void;
@@ -124,6 +125,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setFinanceState((current) => ({ ...current, displayName: displayName.trim() }));
   }, []);
 
+  const setPaydayDay = useCallback((day: number) => {
+    setFinanceState((current) => ({ ...current, paydayDay: clampPaydayDay(day) }));
+  }, []);
+
   const completeSetup = useCallback((locale: Locale, currency: Currency) => {
     setFinanceState((current) => ({ ...current, locale, currency, setupComplete: true }));
   }, []);
@@ -135,6 +140,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       locale: current.locale,
       setupComplete: current.setupComplete,
       displayName: current.displayName,
+      paydayDay: current.paydayDay,
     }));
   }, []);
 
@@ -144,6 +150,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       currency: current.currency,
       setupComplete: current.setupComplete,
       displayName: current.displayName,
+      paydayDay: current.paydayDay,
       categories: createInitialState().categories,
       transactions: [],
       budgets: [],
@@ -168,6 +175,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setCurrency,
       setLocale,
       setDisplayName,
+      setPaydayDay,
       completeSetup,
       resetDemo,
       clearAll,
@@ -186,6 +194,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setCurrency,
       setLocale,
       setDisplayName,
+      setPaydayDay,
       completeSetup,
       resetDemo,
       clearAll,

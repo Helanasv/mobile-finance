@@ -170,5 +170,6 @@ export function createInitialState(): FinanceState {
     goals: DEFAULT_GOALS,
     recurrings: DEFAULT_RECURRINGS,
     monthLimit: 0,
+    paydayDay: 1,
   };
 }

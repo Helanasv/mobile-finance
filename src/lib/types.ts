@@ -55,4 +55,5 @@ export type FinanceState = {
   goals: Goal[];
   recurrings: Recurring[];
   monthLimit: number;
+  paydayDay: number;
 };

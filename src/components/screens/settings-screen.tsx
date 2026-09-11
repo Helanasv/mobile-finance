@@ -67,6 +67,14 @@ export function SettingsScreen() {
 
       <section className="space-y-3">
         <div>
+          <h2 className="text-sm font-semibold">{t.payday}</h2>
+          <p className="text-sm text-muted-foreground">{t.paydayHint}</p>
+        </div>
+        <PaydayField />
+      </section>
+
+      <section className="space-y-3">
+        <div>
           <h2 className="text-sm font-semibold">{t.language}</h2>
           <p className="text-sm text-muted-foreground">{t.languageHint}</p>
         </div>
@@ -116,6 +124,49 @@ export function SettingsScreen() {
           ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+function PaydayField() {
+  const { state, setPaydayDay } = useFinance();
+  const t = useT();
+  const [day, setDay] = useState(String(state.paydayDay ?? 1));
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState(false);
+
+  function savePayday() {
+    const value = Number(day.trim());
+    if (!Number.isInteger(value) || value < 1 || value > 28) {
+      setError(true);
+      return;
+    }
+    setError(false);
+    setPaydayDay(value);
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 1800);
+  }
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor="payday-day">{t.payday}</Label>
+      <div className="flex gap-2">
+        <Input
+          id="payday-day"
+          inputMode="numeric"
+          value={day}
+          onChange={(e) => {
+            setDay(e.target.value);
+            setError(false);
+          }}
+          placeholder={t.paydayPlaceholder}
+          className="h-11 rounded-xl"
+        />
+        <Button type="button" className="h-11 rounded-xl" onClick={savePayday}>
+          {saved ? t.paydaySaved : t.save}
+        </Button>
+      </div>
+      {error ? <p className="text-sm text-destructive">{t.paydayError}</p> : null}
     </div>
   );
 }

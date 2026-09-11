@@ -7,7 +7,7 @@ import { useFinance, useLocale, useT } from "@/components/finance/finance-contex
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { forecastNextMonth, monthsToGoal } from "@/lib/finance";
+import { forecastNextMonth, monthsToGoal, averageDailySpend, daysOfHabit, cushionGoal } from "@/lib/finance";
 import { formatMoney, parseAmount } from "@/lib/format";
 
 export function GoalsScreen() {
@@ -18,6 +18,8 @@ export function GoalsScreen() {
   const [target, setTarget] = useState("");
   const [deposits, setDeposits] = useState<Record<string, string>>({});
   const leftover = forecastNextMonth(state)?.leftover ?? 0;
+  const daily = averageDailySpend(state);
+  const cushion = cushionGoal(state);
 
   if (!ready) {
     return <div className="h-40 animate-pulse rounded-3xl bg-muted" />;
@@ -82,6 +84,8 @@ export function GoalsScreen() {
             const ratio = goal.target > 0 ? goal.saved / goal.target : 0;
             const done = goal.saved >= goal.target;
             const months = monthsToGoal(goal, leftover);
+            const habitDays = cushion?.id === goal.id ? daysOfHabit(goal.saved, daily) : null;
+            const isCushion = cushion?.id === goal.id;
             return (
               <li key={goal.id} className="rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
                 <div className="flex items-start justify-between gap-3">
@@ -107,6 +111,15 @@ export function GoalsScreen() {
                 <p className="mt-2 text-xs text-muted-foreground">
                   {done ? t.goalDone : months == null ? t.goalMonthsUnknown : t.goalMonths(months)}
                 </p>
+                {isCushion ? (
+                  <p className="mt-1 text-sm text-primary">
+                    {habitDays != null
+                      ? t.cushionDaysLine(habitDays)
+                      : goal.saved > 0
+                        ? t.cushionDaysUnknown
+                        : t.cushionDaysEmpty}
+                  </p>
+                ) : null}
                 {!done ? (
                   <form
                     className="mt-3 flex gap-2"
