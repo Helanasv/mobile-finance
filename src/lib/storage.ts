@@ -19,15 +19,13 @@ export function loadState(): FinanceState {
       locale: isLocale(parsed.locale) ? parsed.locale : null,
       currency: isCurrency(parsed.currency) ? parsed.currency : "RUB",
       setupComplete: parsed.setupComplete === true,
+      displayName: typeof parsed.displayName === "string" ? parsed.displayName : "",
       categories: parsed.categories,
       transactions: parsed.transactions,
-      budgets: parsed.budgets ?? [],
       goals: Array.isArray(parsed.goals) ? parsed.goals : [],
       recurrings: Array.isArray(parsed.recurrings) ? parsed.recurrings : [],
-      monthLimit:
-        typeof parsed.monthLimit === "number" && parsed.monthLimit >= 0
-          ? parsed.monthLimit
-          : 0,
+      monthLimit: 0,
+      budgets: [],
     };
   } catch {
     return createInitialState();

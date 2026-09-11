@@ -1,21 +1,18 @@
 "use client";
 
-import { ChartColumn, ChevronLeft, ChevronRight, PiggyBank, Sparkles } from "lucide-react";
+import { ChartColumn, ChevronLeft, ChevronRight, PiggyBank, Settings } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { useEditTransaction } from "@/components/finance/app-shell";
-import { CategoryIcon } from "@/components/finance/category-icon";
 import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { TransactionRow } from "@/components/finance/transaction-row";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
   categoryById,
   groupedTransactions,
   monthTotals,
   overallBalance,
-  spentInCategory,
 } from "@/lib/finance";
 import {
   formatDayHeading,
@@ -25,7 +22,6 @@ import {
   monthKey,
   shiftMonth,
 } from "@/lib/format";
-import { categoryLabel } from "@/lib/i18n";
 
 export function HomeScreen() {
   const { ready, state } = useFinance();
@@ -37,22 +33,13 @@ export function HomeScreen() {
   const totals = useMemo(() => monthTotals(state, month), [state, month]);
   const balance = useMemo(() => overallBalance(state), [state]);
   const goals = state.goals ?? [];
-  const monthLimit = state.monthLimit ?? 0;
   const leftover = totals.income - totals.expense;
   const monthTransactions = useMemo(
     () => (state.transactions ?? []).filter((tx) => inMonth(tx.date, month)),
     [state.transactions, month],
   );
   const recentGroups = groupedTransactions(monthTransactions).slice(0, 4);
-  const tightBudget = (state.budgets ?? [])
-    .map((budget) => {
-      const spent = spentInCategory(state, budget.categoryId, month);
-      const category = categoryById(state, budget.categoryId);
-      const ratio = budget.limit > 0 ? spent / budget.limit : 0;
-      return { budget, spent, category, ratio };
-    })
-    .filter((item) => item.category)
-    .sort((a, b) => b.ratio - a.ratio)[0];
+  const displayName = state.displayName?.trim() ?? "";
 
   if (!ready) {
     return <ScreenSkeleton />;
@@ -61,15 +48,23 @@ export function HomeScreen() {
   return (
     <div className="flex flex-col gap-5 pb-6">
       <header className="flex shrink-0 items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-medium tracking-[0.18em] text-primary uppercase">
             {t.appName}
           </p>
           <h1 className="font-display text-3xl leading-tight font-medium tracking-tight">
-            {t.balance}
+            {displayName ? t.hello(displayName) : t.helloDefault}
           </h1>
         </div>
-        <div className="flex items-center gap-1 rounded-full bg-muted px-1">
+        <div className="flex shrink-0 items-center gap-1">
+          <Link
+            href="/settings"
+            className="flex size-9 items-center justify-center rounded-full bg-muted text-muted-foreground"
+            aria-label={t.settings}
+          >
+            <Settings className="size-4" />
+          </Link>
+          <div className="flex items-center gap-1 rounded-full bg-muted px-1">
           <Button
             size="icon-sm"
             variant="ghost"
@@ -90,12 +85,13 @@ export function HomeScreen() {
             <ChevronRight />
           </Button>
         </div>
+        </div>
       </header>
 
       <section className="relative shrink-0 rounded-[1.75rem] border border-amber-200/25 bg-[#2a231c] p-5 text-[#f6e7c8]">
         <div className="absolute top-0 left-0 h-full w-1.5 rounded-l-[1.75rem] bg-primary" />
         <div className="flex items-start justify-between gap-3 pl-2">
-          <p className="text-sm font-medium text-[#f6e7c8]/80">{t.allAccounts}</p>
+          <p className="text-sm font-medium text-[#f6e7c8]/80">{t.balance}</p>
           <p className="text-sm font-medium text-[#f6e7c8]/80">{state.currency}</p>
         </div>
         <p className="mt-4 pl-2 font-display text-[2.35rem] leading-tight font-medium tracking-tight tabular-nums text-[#f6e7c8]">
@@ -140,29 +136,6 @@ export function HomeScreen() {
         </div>
       </Link>
 
-      {monthLimit > 0 ? (
-        <section className="shrink-0 rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
-          <p className="text-sm font-medium">{t.monthLimit}</p>
-          <div className="mt-2 flex justify-between text-sm tabular-nums">
-            <span className="text-muted-foreground">
-              {t.monthLimitOf(
-                formatMoney(totals.expense, state.currency, locale),
-                formatMoney(monthLimit, state.currency, locale),
-              )}
-            </span>
-          </div>
-          <Progress
-            className="mt-2 h-1.5"
-            value={Math.min(100, (totals.expense / monthLimit) * 100)}
-          />
-          {totals.expense > monthLimit ? (
-            <p className="mt-2 text-xs text-destructive">{t.monthLimitOver}</p>
-          ) : totals.expense / monthLimit >= 0.8 ? (
-            <p className="mt-2 text-xs text-primary">{t.monthLimitTight}</p>
-          ) : null}
-        </section>
-      ) : null}
-
       <Link
         href="/analysis"
         className="flex items-center justify-between gap-3 rounded-[1.6rem] border border-amber-200/15 bg-card px-4 py-3.5"
@@ -173,35 +146,6 @@ export function HomeScreen() {
         </div>
         <ChartColumn className="size-5 text-primary" />
       </Link>
-
-      {tightBudget?.category ? (
-        <section className="rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-medium">{t.tightLimit}</p>
-            <Sparkles className="size-4 text-primary" />
-          </div>
-          <div className="flex items-center gap-3">
-            <span
-              className="flex size-10 items-center justify-center rounded-2xl text-white"
-              style={{ backgroundColor: tightBudget.category.color }}
-            >
-              <CategoryIcon name={tightBudget.category.icon} className="size-4" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex justify-between text-sm">
-                <span>{categoryLabel(tightBudget.category.id, locale, tightBudget.category.name)}</span>
-                <span className="tabular-nums text-muted-foreground">
-                  {formatMoney(tightBudget.spent, state.currency, locale)} / {formatMoney(tightBudget.budget.limit, state.currency, locale)}
-                </span>
-              </div>
-              <Progress
-                className="mt-2 h-1.5"
-                value={Math.min(100, tightBudget.ratio * 100)}
-              />
-            </div>
-          </div>
-        </section>
-      ) : null}
 
       <section className="flex flex-col">
         <div className="mb-2 flex items-center justify-between">

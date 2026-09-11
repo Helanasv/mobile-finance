@@ -48,6 +48,7 @@ export type FinanceState = {
   locale: Locale | null;
   currency: Currency;
   setupComplete: boolean;
+  displayName: string;
   categories: Category[];
   transactions: Transaction[];
   budgets: Budget[];

@@ -141,7 +141,6 @@ export function allTimeInsights(state: FinanceState): Insight[] {
   const months = monthlyBreakdown(state);
   const insights: Insight[] = [];
   const top = spend[0];
-  const currentMonth = monthKey();
 
   if (state.transactions.length < 4 || months.length < 2) {
     insights.push({ id: "need-data", kind: "needData" });
@@ -174,19 +173,6 @@ export function allTimeInsights(state: FinanceState): Insight[] {
       kind: "save",
       amount: forecast.leftover,
     });
-  }
-
-  const tight = state.budgets
-    .map((budget) => {
-      const spent = spentInCategory(state, budget.categoryId, currentMonth);
-      const ratio = budget.limit > 0 ? spent / budget.limit : 0;
-      return { categoryId: budget.categoryId, ratio };
-    })
-    .filter((row) => row.ratio >= 0.8)
-    .sort((a, b) => b.ratio - a.ratio)[0];
-
-  if (tight) {
-    insights.push({ id: "tight", kind: "tight", categoryId: tight.categoryId });
   }
 
   return insights.slice(0, 4);

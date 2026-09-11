@@ -12,7 +12,6 @@ import {
 } from "@/lib/store";
 import { messages } from "@/lib/i18n";
 import type {
-  Budget,
   Currency,
   FinanceState,
   Goal,
@@ -27,8 +26,6 @@ type FinanceContextValue = {
   addTransaction: (tx: Omit<Transaction, "id">) => void;
   updateTransaction: (tx: Transaction) => void;
   deleteTransaction: (id: string) => void;
-  upsertBudget: (budget: Budget) => void;
-  setMonthLimit: (limit: number) => void;
   addGoal: (goal: Omit<Goal, "id">) => void;
   addToGoal: (id: string, amount: number) => void;
   deleteGoal: (id: string) => void;
@@ -36,6 +33,7 @@ type FinanceContextValue = {
   deleteRecurring: (id: string) => void;
   setCurrency: (currency: Currency) => void;
   setLocale: (locale: Locale) => void;
+  setDisplayName: (displayName: string) => void;
   completeSetup: (locale: Locale, currency: Currency) => void;
   resetDemo: () => void;
   clearAll: () => void;
@@ -73,24 +71,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       ...current,
       transactions: current.transactions.filter((item) => item.id !== id),
     }));
-  }, []);
-
-  const upsertBudget = useCallback((budget: Budget) => {
-    setFinanceState((current) => {
-      const exists = current.budgets.some((item) => item.categoryId === budget.categoryId);
-      return {
-        ...current,
-        budgets: exists
-          ? current.budgets.map((item) =>
-              item.categoryId === budget.categoryId ? budget : item,
-            )
-          : [...current.budgets, budget],
-      };
-    });
-  }, []);
-
-  const setMonthLimit = useCallback((limit: number) => {
-    setFinanceState((current) => ({ ...current, monthLimit: limit }));
   }, []);
 
   const addGoal = useCallback((goal: Omit<Goal, "id">) => {
@@ -140,6 +120,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setFinanceState((current) => ({ ...current, locale }));
   }, []);
 
+  const setDisplayName = useCallback((displayName: string) => {
+    setFinanceState((current) => ({ ...current, displayName: displayName.trim() }));
+  }, []);
+
   const completeSetup = useCallback((locale: Locale, currency: Currency) => {
     setFinanceState((current) => ({ ...current, locale, currency, setupComplete: true }));
   }, []);
@@ -150,6 +134,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       currency: current.currency,
       locale: current.locale,
       setupComplete: current.setupComplete,
+      displayName: current.displayName,
     }));
   }, []);
 
@@ -158,6 +143,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       locale: current.locale,
       currency: current.currency,
       setupComplete: current.setupComplete,
+      displayName: current.displayName,
       categories: createInitialState().categories,
       transactions: [],
       budgets: [],
@@ -174,8 +160,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       addTransaction,
       updateTransaction,
       deleteTransaction,
-      upsertBudget,
-      setMonthLimit,
       addGoal,
       addToGoal,
       deleteGoal,
@@ -183,6 +167,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       deleteRecurring,
       setCurrency,
       setLocale,
+      setDisplayName,
       completeSetup,
       resetDemo,
       clearAll,
@@ -193,8 +178,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       addTransaction,
       updateTransaction,
       deleteTransaction,
-      upsertBudget,
-      setMonthLimit,
       addGoal,
       addToGoal,
       deleteGoal,
@@ -202,6 +185,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       deleteRecurring,
       setCurrency,
       setLocale,
+      setDisplayName,
       completeSetup,
       resetDemo,
       clearAll,

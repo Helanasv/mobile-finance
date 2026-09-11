@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 import { CategoryIcon } from "@/components/finance/category-icon";
 import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import {
   categoryById,
   categorySpend,
   monthTotals,
-  spentInCategory,
 } from "@/lib/finance";
 import { formatMoney, formatMonthTitle, monthKey, parseAmount } from "@/lib/format";
 import { categoryLabel } from "@/lib/i18n";
@@ -20,7 +19,7 @@ import type { TransactionType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function BudgetsScreen() {
-  const { ready, state, upsertBudget, setMonthLimit, addRecurring, deleteRecurring, resetDemo, clearAll } =
+  const { ready, state, addRecurring, deleteRecurring, resetDemo, clearAll } =
     useFinance();
   const t = useT();
   const locale = useLocale();
@@ -28,23 +27,11 @@ export function BudgetsScreen() {
   const totals = monthTotals(state, month);
   const spend = categorySpend(state, month, "expense");
   const maxSpend = spend[0]?.amount ?? 0;
-  const [drafts, setDrafts] = useState<Record<string, string>>({});
-  const [monthLimitDraft, setMonthLimitDraft] = useState(
-    state.monthLimit ? String(state.monthLimit) : "",
-  );
   const [recType, setRecType] = useState<TransactionType>("expense");
   const [recCategory, setRecCategory] = useState("home");
   const [recAmount, setRecAmount] = useState("");
   const [recNote, setRecNote] = useState("");
   const [recDay, setRecDay] = useState("1");
-
-  const budgetRows = state.categories
-    .filter((category) => category.type === "expense")
-    .map((category) => {
-      const budget = state.budgets.find((item) => item.categoryId === category.id);
-      const spent = spentInCategory(state, category.id, month);
-      return { category, budget, spent };
-    });
 
   if (!ready) {
     return <div className="h-40 animate-pulse rounded-3xl bg-muted" />;
@@ -60,56 +47,10 @@ export function BudgetsScreen() {
         <p className="mt-1 text-sm capitalize text-muted-foreground">
           {formatMonthTitle(month, locale)}
         </p>
+        <Link href="/settings" className="mt-2 inline-block text-sm text-primary">
+          {t.settings}
+        </Link>
       </header>
-
-      <section className="space-y-3 rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
-        <h2 className="text-sm font-medium">{t.monthLimit}</h2>
-        <p className="text-xs text-muted-foreground">{t.monthLimitHint}</p>
-        {state.monthLimit > 0 ? (
-          <>
-            <p className="text-sm tabular-nums">
-              {t.monthLimitOf(
-                formatMoney(totals.expense, state.currency, locale),
-                formatMoney(state.monthLimit, state.currency, locale),
-              )}
-            </p>
-            <Progress
-              className="h-1.5"
-              value={Math.min(100, (totals.expense / state.monthLimit) * 100)}
-            />
-          </>
-        ) : null}
-        <form
-          className="flex gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const raw = monthLimitDraft.trim();
-            if (!raw) {
-              setMonthLimit(0);
-              toast.success(t.monthLimitSaved);
-              return;
-            }
-            const value = parseAmount(raw);
-            if (!Number.isFinite(value) || value < 0) {
-              toast.error(t.enterLimit);
-              return;
-            }
-            setMonthLimit(value);
-            toast.success(t.monthLimitSaved);
-          }}
-        >
-          <Input
-            inputMode="decimal"
-            placeholder={`${t.limitPlaceholder}, ${state.currency}`}
-            className="h-10 rounded-xl"
-            value={monthLimitDraft}
-            onChange={(event) => setMonthLimitDraft(event.target.value)}
-          />
-          <Button type="submit" className="h-10 rounded-xl">
-            {t.ok}
-          </Button>
-        </form>
-      </section>
 
       <section className="rounded-3xl border p-4">
         <p className="text-sm text-muted-foreground">{t.spendByCategory}</p>
@@ -152,79 +93,6 @@ export function BudgetsScreen() {
             formatMoney(totals.income, state.currency, locale),
           )}
         </p>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">{t.limits}</h2>
-        {budgetRows.map(({ category, budget, spent }) => {
-          const limit = budget?.limit ?? 0;
-          const ratio = limit > 0 ? spent / limit : 0;
-          const over = limit > 0 && spent > limit;
-          return (
-            <div key={category.id} className="rounded-3xl border p-4">
-              <div className="flex items-center gap-3">
-                <span
-                  className="flex size-10 items-center justify-center rounded-2xl text-white"
-                  style={{ backgroundColor: category.color }}
-                >
-                  <CategoryIcon name={category.icon} className="size-4" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium">
-                    {categoryLabel(category.id, locale, category.name)}
-                  </p>
-                  <p className={cn("text-sm tabular-nums", over && "text-destructive")}>
-                    {formatMoney(spent, state.currency, locale)}
-                    {limit
-                      ? ` ${t.of} ${formatMoney(limit, state.currency, locale)}`
-                      : t.noLimit}
-                  </p>
-                </div>
-              </div>
-              {limit > 0 ? (
-                <Progress
-                  className="mt-3 h-1.5"
-                  value={Math.min(100, ratio * 100)}
-                />
-              ) : null}
-              <form
-                className="mt-3 flex gap-2"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  const raw = drafts[category.id] ?? String(limit || "");
-                  const value = Number(raw.replace(",", ".").replace(/\s/g, ""));
-                  if (!Number.isFinite(value) || value < 0) {
-                    toast.error(t.enterLimit);
-                    return;
-                  }
-                  upsertBudget({
-                    categoryId: category.id,
-                    limit: Math.round(value * 100) / 100,
-                  });
-                  toast.success(
-                    t.limitUpdated(categoryLabel(category.id, locale, category.name)),
-                  );
-                }}
-              >
-                <Input
-                  inputMode="numeric"
-                  placeholder={`${t.limitPlaceholder}, ${state.currency}`}
-                  className="h-10 rounded-xl"
-                  value={drafts[category.id] ?? (limit ? String(limit) : "")}
-                  onChange={(event) =>
-                    setDrafts((current) => ({
-                      ...current,
-                      [category.id]: event.target.value,
-                    }))
-                  }
-                />
-                <Button type="submit" className="h-10 rounded-xl">
-                  {t.ok}
-                </Button>
-              </form>
-            </div>
-          );
-        })}
       </section>
 
       <section className="space-y-3">

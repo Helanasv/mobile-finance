@@ -1,4 +1,4 @@
-import type { Budget, Category, FinanceState, Goal, Recurring, Transaction } from "@/lib/types";
+import type { Category, FinanceState, Goal, Recurring, Transaction } from "@/lib/types";
 import { todayIso } from "@/lib/format";
 
 export const DEFAULT_CATEGORIES: Category[] = [
@@ -143,14 +143,6 @@ export function createSeedTransactions(): Transaction[] {
   ];
 }
 
-export const DEFAULT_BUDGETS: Budget[] = [
-  { categoryId: "food", limit: 18000 },
-  { categoryId: "cafe", limit: 6000 },
-  { categoryId: "transport", limit: 4000 },
-  { categoryId: "shop", limit: 8000 },
-  { categoryId: "fun", limit: 5000 },
-];
-
 export const DEFAULT_GOALS: Goal[] = [
   { id: "g1", name: "Подушка", target: 100000, saved: 20000 },
 ];
@@ -171,11 +163,12 @@ export function createInitialState(): FinanceState {
     locale: null,
     currency: "RUB",
     setupComplete: false,
+    displayName: "",
     categories: DEFAULT_CATEGORIES,
     transactions: createSeedTransactions(),
-    budgets: DEFAULT_BUDGETS,
+    budgets: [],
     goals: DEFAULT_GOALS,
     recurrings: DEFAULT_RECURRINGS,
-    monthLimit: 70000,
+    monthLimit: 0,
   };
 }
