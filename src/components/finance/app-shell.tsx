@@ -29,7 +29,8 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const needsSetup = ready && !state.setupComplete;
 
   useEffect(() => {
-    document.getElementById("dostatok-boot")?.remove();
+    const boot = document.getElementById("dostatok-boot");
+    if (boot) boot.hidden = true;
   }, []);
 
   useEffect(() => {
