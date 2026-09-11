@@ -16,97 +16,104 @@ export function LanguageScreen() {
   const t = messages[locale ?? "ru"];
 
   return (
-    <div className="flex flex-1 flex-col justify-center gap-8 px-1 py-10">
-      <div className="text-center">
-        <span className="mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl border border-amber-200/20 bg-primary/15 font-display text-2xl text-primary">
-          Д
-        </span>
-        <p className="text-sm tracking-[0.2em] text-primary/80 uppercase">
-          Достаток · Dostatok
-        </p>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-4 pt-4">
+        <div className="text-center">
+          <span className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl border border-amber-200/20 bg-primary/15 font-display text-xl text-primary">
+            Д
+          </span>
+          <p className="text-sm tracking-[0.2em] text-primary/80 uppercase">
+            Достаток · Dostatok
+          </p>
+          {step === "language" ? (
+            <>
+              <h1 className="mt-3 font-display text-3xl font-medium tracking-tight">
+                Выберите язык
+              </h1>
+              <p className="mt-2 text-base text-muted-foreground">Choose language</p>
+            </>
+          ) : (
+            <>
+              <h1 className="mt-3 font-display text-3xl font-medium tracking-tight">
+                {t.chooseCurrency}
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground">{t.currencyHint}</p>
+            </>
+          )}
+        </div>
+
         {step === "language" ? (
-          <>
-            <h1 className="mt-3 font-display text-4xl font-medium tracking-tight">
-              Выберите язык
-            </h1>
-            <p className="mt-2 text-lg text-muted-foreground">Choose language</p>
-          </>
+          <div className="mt-8 grid gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setLocale("ru");
+                setStep("currency");
+              }}
+              className="rounded-[1.6rem] border border-amber-200/15 bg-card px-5 py-5 text-left transition hover:border-primary/40 hover:bg-accent"
+            >
+              <span className="block font-display text-2xl">Русский</span>
+              <span className="mt-1 block text-sm text-muted-foreground">
+                Интерфейс на русском
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLocale("en");
+                setStep("currency");
+              }}
+              className="rounded-[1.6rem] border border-amber-200/15 bg-card px-5 py-5 text-left transition hover:border-primary/40 hover:bg-accent"
+            >
+              <span className="block font-display text-2xl">English</span>
+              <span className="mt-1 block text-sm text-muted-foreground">
+                Use the app in English
+              </span>
+            </button>
+          </div>
         ) : (
-          <>
-            <h1 className="mt-3 font-display text-4xl font-medium tracking-tight">
-              {t.chooseCurrency}
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground">{t.currencyHint}</p>
-          </>
+          <div className="mt-6 grid gap-2">
+            {CURRENCIES.map((item) => (
+              <button
+                key={item.code}
+                type="button"
+                onClick={() => setCurrency(item.code)}
+                className={cn(
+                  "flex min-h-14 items-center justify-between rounded-[1.4rem] border px-4 py-3 text-left transition",
+                  currency === item.code
+                    ? "border-primary/50 bg-primary/10"
+                    : "border-amber-200/15 bg-card hover:border-primary/40 hover:bg-accent",
+                )}
+              >
+                <span>
+                  <span className="block font-display text-lg">{item.label[locale ?? "ru"]}</span>
+                  <span className="text-xs text-muted-foreground">{item.code}</span>
+                </span>
+                <span className="font-display text-2xl text-primary">{item.symbol}</span>
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
-      {step === "language" ? (
-        <div className="grid gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setLocale("ru");
-              setStep("currency");
-            }}
-            className="rounded-[1.6rem] border border-amber-200/15 bg-card px-5 py-6 text-left transition hover:border-primary/40 hover:bg-accent"
-          >
-            <span className="block font-display text-2xl">Русский</span>
-            <span className="mt-1 block text-sm text-muted-foreground">
-              Интерфейс на русском
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setLocale("en");
-              setStep("currency");
-            }}
-            className="rounded-[1.6rem] border border-amber-200/15 bg-card px-5 py-6 text-left transition hover:border-primary/40 hover:bg-accent"
-          >
-            <span className="block font-display text-2xl">English</span>
-            <span className="mt-1 block text-sm text-muted-foreground">
-              Use the app in English
-            </span>
-          </button>
-        </div>
-      ) : (
-        <div className="grid gap-3">
-          {CURRENCIES.map((item) => (
-            <button
-              key={item.code}
-              type="button"
-              onClick={() => setCurrency(item.code)}
-              className={cn(
-                "flex items-center justify-between rounded-[1.6rem] border px-5 py-5 text-left transition",
-                currency === item.code
-                  ? "border-primary/50 bg-primary/10"
-                  : "border-amber-200/15 bg-card hover:border-primary/40 hover:bg-accent",
-              )}
-            >
-              <span>
-                <span className="block font-display text-xl">{item.label[locale ?? "ru"]}</span>
-                <span className="mt-1 block text-sm text-muted-foreground">{item.code}</span>
-              </span>
-              <span className="font-display text-2xl text-primary">{item.symbol}</span>
-            </button>
-          ))}
+      {step === "currency" ? (
+        <div className="shrink-0 border-t border-amber-200/10 bg-background px-1 pt-3 pb-[max(6.5rem,calc(env(safe-area-inset-bottom)+5.5rem))]">
           <button
             type="button"
             onClick={() => locale && completeSetup(locale, currency)}
-            className="mt-2 h-12 rounded-2xl bg-primary text-base font-semibold text-primary-foreground"
+            className="flex h-14 w-full items-center justify-center rounded-2xl bg-primary text-lg font-semibold text-primary-foreground"
           >
             {t.continue}
           </button>
           <button
             type="button"
             onClick={() => setStep("language")}
-            className="text-sm text-muted-foreground"
+            className="mt-3 flex h-10 w-full items-center justify-center text-sm text-muted-foreground"
           >
             {t.back}
           </button>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
