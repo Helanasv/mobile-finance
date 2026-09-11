@@ -3,7 +3,7 @@ import { categoryLabel } from "@/lib/i18n";
 import type { Category, FinanceState, Goal, Transaction, TransactionType } from "@/lib/types";
 
 export function monthTotals(state: FinanceState, month: string) {
-  return state.transactions.reduce(
+  return (state.transactions ?? []).reduce(
     (acc, tx) => {
       if (!inMonth(tx.date, month)) return acc;
       if (tx.type === "income") acc.income += tx.amount;
@@ -15,7 +15,7 @@ export function monthTotals(state: FinanceState, month: string) {
 }
 
 export function overallBalance(state: FinanceState) {
-  return state.transactions.reduce((sum, tx) => {
+  return (state.transactions ?? []).reduce((sum, tx) => {
     return tx.type === "income" ? sum + tx.amount : sum - tx.amount;
   }, 0);
 }
@@ -65,7 +65,7 @@ export function categorySpend(state: FinanceState, month: string, type: Transact
 }
 
 export function allTimeTotals(state: FinanceState) {
-  return state.transactions.reduce(
+  return (state.transactions ?? []).reduce(
     (acc, tx) => {
       if (tx.type === "income") acc.income += tx.amount;
       else acc.expense += tx.amount;

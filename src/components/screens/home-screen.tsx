@@ -36,13 +36,15 @@ export function HomeScreen() {
 
   const totals = useMemo(() => monthTotals(state, month), [state, month]);
   const balance = useMemo(() => overallBalance(state), [state]);
+  const goals = state.goals ?? [];
+  const monthLimit = state.monthLimit ?? 0;
   const leftover = totals.income - totals.expense;
   const monthTransactions = useMemo(
-    () => state.transactions.filter((tx) => inMonth(tx.date, month)),
+    () => (state.transactions ?? []).filter((tx) => inMonth(tx.date, month)),
     [state.transactions, month],
   );
   const recentGroups = groupedTransactions(monthTransactions).slice(0, 4);
-  const tightBudget = state.budgets
+  const tightBudget = (state.budgets ?? [])
     .map((budget) => {
       const spent = spentInCategory(state, budget.categoryId, month);
       const category = categoryById(state, budget.categoryId);
@@ -57,13 +59,15 @@ export function HomeScreen() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-5">
-      <header className="flex items-start justify-between gap-3">
+    <div className="flex flex-col gap-5 pb-6">
+      <header className="flex shrink-0 items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-medium tracking-[0.18em] text-primary/80 uppercase">
+          <p className="text-xs font-medium tracking-[0.18em] text-primary uppercase">
             {t.appName}
           </p>
-          <h1 className="font-display text-3xl font-medium tracking-tight">{t.balance}</h1>
+          <h1 className="font-display text-3xl leading-tight font-medium tracking-tight">
+            {t.balance}
+          </h1>
         </div>
         <div className="flex items-center gap-1 rounded-full bg-muted px-1">
           <Button
@@ -88,30 +92,30 @@ export function HomeScreen() {
         </div>
       </header>
 
-      <section className="relative overflow-hidden rounded-[1.75rem] border border-amber-200/20 bg-[linear-gradient(145deg,#2a231c_0%,#1a1612_55%,#3a2f24_100%)] p-5 text-amber-50 shadow-[inset_0_1px_0_rgba(255,220,160,0.15)]">
-        <div className="absolute top-0 left-0 h-full w-1.5 bg-primary" />
+      <section className="relative shrink-0 rounded-[1.75rem] border border-amber-200/25 bg-[#2a231c] p-5 text-[#f6e7c8]">
+        <div className="absolute top-0 left-0 h-full w-1.5 rounded-l-[1.75rem] bg-primary" />
         <div className="flex items-start justify-between gap-3 pl-2">
-          <p className="text-sm font-medium text-amber-100/70">{t.allAccounts}</p>
-          <p className="text-sm font-medium text-amber-100/70">{state.currency}</p>
+          <p className="text-sm font-medium text-[#f6e7c8]/80">{t.allAccounts}</p>
+          <p className="text-sm font-medium text-[#f6e7c8]/80">{state.currency}</p>
         </div>
-        <p className="mt-4 pl-2 font-display text-[2.35rem] leading-none font-medium tracking-tight tabular-nums">
+        <p className="mt-4 pl-2 font-display text-[2.35rem] leading-tight font-medium tracking-tight tabular-nums text-[#f6e7c8]">
           {formatMoney(balance, state.currency, locale)}
         </p>
         <div className="mt-6 grid grid-cols-2 gap-3 pl-2 text-sm">
-          <div className="rounded-2xl border border-amber-100/10 bg-black/25 p-3">
-            <p className="text-amber-100/60">{t.income}</p>
+          <div className="rounded-2xl border border-amber-100/15 bg-black/30 p-3">
+            <p className="text-[#f6e7c8]/70">{t.income}</p>
             <p className="mt-1 text-lg font-semibold tabular-nums text-primary">
               {formatMoney(totals.income, state.currency, locale)}
             </p>
           </div>
-          <div className="rounded-2xl border border-amber-100/10 bg-black/25 p-3">
-            <p className="text-amber-100/60">{t.expense}</p>
-            <p className="mt-1 text-lg font-semibold tabular-nums">
+          <div className="rounded-2xl border border-amber-100/15 bg-black/30 p-3">
+            <p className="text-[#f6e7c8]/70">{t.expense}</p>
+            <p className="mt-1 text-lg font-semibold tabular-nums text-[#f6e7c8]">
               {formatMoney(totals.expense, state.currency, locale)}
             </p>
           </div>
         </div>
-        <p className="mt-4 pl-2 text-sm text-amber-100/80">
+        <p className="mt-4 pl-2 text-sm text-[#f6e7c8]/90">
           {t.leftover}{" "}
           <span className="font-semibold tabular-nums text-primary">
             {formatMoney(leftover, state.currency, locale)}
@@ -121,7 +125,7 @@ export function HomeScreen() {
 
       <Link
         href="/goals"
-        className="flex items-center gap-3 rounded-[1.6rem] border border-amber-200/20 bg-card px-4 py-4"
+        className="flex shrink-0 items-center gap-3 rounded-[1.6rem] border border-amber-200/20 bg-card px-4 py-4"
       >
         <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
           <PiggyBank className="size-6" />
@@ -129,31 +133,31 @@ export function HomeScreen() {
         <div className="min-w-0 flex-1">
           <p className="font-display text-xl font-medium tracking-tight">{t.goals}</p>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {state.goals[0]
-              ? `${state.goals[0].name} · ${formatMoney(state.goals[0].saved, state.currency, locale)} / ${formatMoney(state.goals[0].target, state.currency, locale)}`
+            {goals[0]
+              ? `${goals[0].name} · ${formatMoney(goals[0].saved, state.currency, locale)} / ${formatMoney(goals[0].target, state.currency, locale)}`
               : t.goalsHint}
           </p>
         </div>
       </Link>
 
-      {state.monthLimit > 0 ? (
-        <section className="rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
+      {monthLimit > 0 ? (
+        <section className="shrink-0 rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
           <p className="text-sm font-medium">{t.monthLimit}</p>
           <div className="mt-2 flex justify-between text-sm tabular-nums">
             <span className="text-muted-foreground">
               {t.monthLimitOf(
                 formatMoney(totals.expense, state.currency, locale),
-                formatMoney(state.monthLimit, state.currency, locale),
+                formatMoney(monthLimit, state.currency, locale),
               )}
             </span>
           </div>
           <Progress
             className="mt-2 h-1.5"
-            value={Math.min(100, (totals.expense / state.monthLimit) * 100)}
+            value={Math.min(100, (totals.expense / monthLimit) * 100)}
           />
-          {totals.expense > state.monthLimit ? (
+          {totals.expense > monthLimit ? (
             <p className="mt-2 text-xs text-destructive">{t.monthLimitOver}</p>
-          ) : totals.expense / state.monthLimit >= 0.8 ? (
+          ) : totals.expense / monthLimit >= 0.8 ? (
             <p className="mt-2 text-xs text-primary">{t.monthLimitTight}</p>
           ) : null}
         </section>
@@ -199,7 +203,7 @@ export function HomeScreen() {
         </section>
       ) : null}
 
-      <section className="flex flex-1 flex-col">
+      <section className="flex flex-col">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t.monthOps}</h2>
         </div>
