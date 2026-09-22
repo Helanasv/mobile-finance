@@ -72,7 +72,6 @@ export function WhatIfCard() {
       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
         {t.whatIfTitle}
       </p>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.whatIfHint}</p>
 
       <div className="mt-4 space-y-2">
         {options.map((option) => {
@@ -173,21 +172,18 @@ export function WhatIfCard() {
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{story}</p>
 
       {fork === "save" && saveDraft > 0 ? (
-        <div className="mt-4 space-y-2">
-          <p className="text-xs text-muted-foreground">{t.whatIfApplyHint}</p>
-          <Button
-            type="button"
-            className="h-11 w-full rounded-xl"
-            onClick={() => {
-              addToCushion(saveDraft);
-              setFork("off");
-              setSaveDraft(0);
-              toast.success(t.briefingSaved);
-            }}
-          >
-            {t.whatIfApplySave}
-          </Button>
-        </div>
+        <Button
+          type="button"
+          className="mt-4 h-11 w-full rounded-xl"
+          onClick={() => {
+            addToCushion(saveDraft);
+            setFork("off");
+            setSaveDraft(0);
+            toast.success(t.briefingSaved);
+          }}
+        >
+          {t.whatIfApplySave}
+        </Button>
       ) : null}
     </section>
   );
