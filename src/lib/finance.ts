@@ -391,7 +391,7 @@ export function cushionGoal(state: FinanceState) {
   const goals = state.goals ?? [];
   if (goals.length === 0) return null;
   const named = goals.find((goal) =>
-    /подушк|cushion|emergency|reserve/i.test(goal.name),
+    /запас|подушк|reserve|cushion|emergency/i.test(goal.name),
   );
   return named ?? goals[0];
 }

@@ -144,7 +144,7 @@ export function createSeedTransactions(): Transaction[] {
 }
 
 export const DEFAULT_GOALS: Goal[] = [
-  { id: "g1", name: "Подушка", target: 100000, saved: 20000 },
+  { id: "g1", name: "Запас", target: 100000, saved: 20000 },
 ];
 
 export const DEFAULT_RECURRINGS: Recurring[] = [

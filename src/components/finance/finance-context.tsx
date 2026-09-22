@@ -147,7 +147,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setFinanceState((current) => {
       const existing = cushionGoal(current);
       if (!existing) {
-        const name = current.locale === "en" ? "Cushion" : "Подушка";
+        const name = current.locale === "en" ? "Reserve" : "Запас";
         return {
           ...current,
           goals: [
