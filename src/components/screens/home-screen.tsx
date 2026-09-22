@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { DayBriefing } from "@/components/finance/day-briefing";
+import { ReserveScenes } from "@/components/finance/reserve-scenes";
+import { TodayPaceCard } from "@/components/finance/today-pace";
+import { WeeklyNote } from "@/components/finance/weekly-note";
 import { WhatIfCard } from "@/components/finance/what-if";
 import { useEditTransaction } from "@/components/finance/app-shell";
 import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
@@ -17,6 +20,7 @@ import {
   monthTotals,
   overallBalance,
   spendableUntilPayday,
+  untilFriday,
 } from "@/lib/finance";
 import {
   formatDayHeading,
@@ -37,7 +41,6 @@ export function HomeScreen() {
 
   const totals = useMemo(() => monthTotals(state, month), [state, month]);
   const balance = useMemo(() => overallBalance(state), [state]);
-  const goals = state.goals ?? [];
   const leftover = totals.income - totals.expense;
   const monthTransactions = useMemo(
     () => (state.transactions ?? []).filter((tx) => inMonth(tx.date, month)),
@@ -46,6 +49,7 @@ export function HomeScreen() {
   const recentGroups = groupedTransactions(monthTransactions).slice(0, 4);
   const displayName = state.displayName?.trim() ?? "";
   const free = useMemo(() => spendableUntilPayday(state), [state]);
+  const friday = useMemo(() => untilFriday(state), [state]);
   const cushion = useMemo(() => cushionDays(state), [state]);
   const committed = free.reservedGoals + free.upcomingExpense;
 
@@ -97,6 +101,7 @@ export function HomeScreen() {
       </header>
 
       <DayBriefing />
+      <WeeklyNote />
 
       <section className="relative shrink-0 rounded-[1.75rem] border border-amber-200/25 bg-[#2a231c] p-5 text-[#f6e7c8]">
         <div className="absolute top-0 left-0 h-full w-1.5 rounded-l-[1.75rem] bg-primary" />
@@ -146,6 +151,17 @@ export function HomeScreen() {
                 {t.freePerDay(formatMoney(free.perDay, state.currency, locale))}
               </p>
             ) : null}
+            {friday.amount > 0 ? (
+              <p className="mt-2 text-sm">
+                {t.untilFriday}:{" "}
+                {friday.days === 1
+                  ? t.untilFridayToday(formatMoney(friday.amount, state.currency, locale))
+                  : t.untilFridayLine(
+                      formatMoney(friday.amount, state.currency, locale),
+                      t.daysLabel(friday.days),
+                    )}
+              </p>
+            ) : null}
             {committed > 0 ? (
               <p className="mt-2 text-xs text-muted-foreground">
                 {t.freeCommitted(formatMoney(committed, state.currency, locale))}
@@ -160,6 +176,8 @@ export function HomeScreen() {
         </Link>
       </section>
 
+      <TodayPaceCard />
+
       <WhatIfCard />
 
       <Link
@@ -172,17 +190,9 @@ export function HomeScreen() {
         <div className="min-w-0 flex-1">
           <p className="font-display text-xl font-medium tracking-tight">{t.goals}</p>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {cushion.days != null
-              ? t.cushionDaysLine(cushion.days)
-              : goals[0]
-                ? `${goals[0].name} · ${formatMoney(goals[0].saved, state.currency, locale)} / ${formatMoney(goals[0].target, state.currency, locale)}`
-                : t.goalsHint}
+            {cushion.days != null ? t.cushionDaysLine(cushion.days) : t.goalsHint}
           </p>
-          {cushion.days != null && cushion.goal ? (
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {cushion.goal.name} · {formatMoney(cushion.saved, state.currency, locale)}
-            </p>
-          ) : null}
+          <ReserveScenes compact />
         </div>
       </Link>
 

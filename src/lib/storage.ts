@@ -41,6 +41,10 @@ export function loadState(): FinanceState {
       paydayDay: clampPayday(parsed.paydayDay),
       briefingDismissedOn:
         typeof parsed.briefingDismissedOn === "string" ? parsed.briefingDismissedOn : null,
+      weeklyNoteDismissedWeek:
+        typeof parsed.weeklyNoteDismissedWeek === "string"
+          ? parsed.weeklyNoteDismissedWeek
+          : null,
     };
   } catch {
     return createInitialState();

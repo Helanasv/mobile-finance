@@ -134,3 +134,21 @@ export function daysBetween(fromIso: string, toIso: string) {
   const to = parseIsoDate(toIso).getTime();
   return Math.round((to - from) / 86_400_000);
 }
+
+export function thisFridayIso(today = todayIso()) {
+  const date = parseIsoDate(today);
+  const toFriday = (5 - date.getDay() + 7) % 7;
+  return addDaysIso(today, toFriday);
+}
+
+export function isoWeekRange(isoDate: string) {
+  const date = parseIsoDate(isoDate);
+  const fromMonday = (date.getDay() + 6) % 7;
+  const from = addDaysIso(isoDate, -fromMonday);
+  return { from, to: addDaysIso(from, 6) };
+}
+
+export function isoWeekKey(isoDate: string) {
+  const { from } = isoWeekRange(isoDate);
+  return from;
+}

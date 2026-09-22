@@ -8,10 +8,22 @@ import { LanguageScreen } from "@/components/finance/language-screen";
 import { TransactionForm } from "@/components/finance/transaction-form";
 import type { Transaction } from "@/lib/types";
 
-const EditContext = createContext<(tx: Transaction) => void>(() => {});
+type ShellTx = {
+  edit: (tx: Transaction) => void;
+  add: (opts?: { fromTodayNorm?: boolean }) => void;
+};
+
+const ShellTxContext = createContext<ShellTx>({
+  edit: () => {},
+  add: () => {},
+});
 
 export function useEditTransaction() {
-  return useContext(EditContext);
+  return useContext(ShellTxContext).edit;
+}
+
+export function useAddTransaction() {
+  return useContext(ShellTxContext).add;
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -26,6 +38,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const { ready, state } = useFinance();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
+  const [fromTodayNorm, setFromTodayNorm] = useState(false);
   const needsSetup = ready && !state.setupComplete;
 
   useEffect(() => {
@@ -39,12 +52,14 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
     }
   }, [state.locale]);
 
-  function openNew() {
+  function openNew(opts?: { fromTodayNorm?: boolean }) {
     setEditing(null);
+    setFromTodayNorm(opts?.fromTodayNorm === true);
     setOpen(true);
   }
 
   function openEdit(tx: Transaction) {
+    setFromTodayNorm(false);
     setEditing(tx);
     setOpen(true);
   }
@@ -59,20 +74,24 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         ) : (
           <>
             <TransactionForm
-              key={`${editing?.id ?? "new"}-${open ? "open" : "closed"}`}
+              key={`${editing?.id ?? "new"}-${fromTodayNorm ? "today" : "plain"}-${open ? "open" : "closed"}`}
               open={open}
               initial={editing}
+              fromTodayNorm={fromTodayNorm}
               onOpenChange={(next) => {
                 setOpen(next);
-                if (!next) setEditing(null);
+                if (!next) {
+                  setEditing(null);
+                  setFromTodayNorm(false);
+                }
               }}
             />
-            <EditContext.Provider value={openEdit}>
+            <ShellTxContext.Provider value={{ edit: openEdit, add: openNew }}>
               <main className="min-h-0 flex-1 overflow-y-auto px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
                 {children}
               </main>
-            </EditContext.Provider>
-            <BottomNav onAdd={openNew} />
+            </ShellTxContext.Provider>
+            <BottomNav onAdd={() => openNew()} />
           </>
         )}
       </div>

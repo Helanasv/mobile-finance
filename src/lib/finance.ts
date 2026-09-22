@@ -1,4 +1,4 @@
-import { addDaysIso, daysBetween, inMonth, isoDateInMonth, monthKey, shiftMonth, todayIso } from "@/lib/format";
+import { addDaysIso, daysBetween, inMonth, isoDateInMonth, isoWeekKey, isoWeekRange, monthKey, shiftMonth, thisFridayIso, todayIso } from "@/lib/format";
 import { categoryLabel } from "@/lib/i18n";
 import type { Category, FinanceState, Goal, Transaction, TransactionType } from "@/lib/types";
 
@@ -262,7 +262,7 @@ export function compareMonths(state: FinanceState, current: string) {
 }
 
 export function transactionsToCsv(state: FinanceState, locale: "ru" | "en") {
-  const header = ["date", "type", "category", "amount", "note"];
+  const header = ["date", "type", "category", "amount", "note", "intent"];
   const lines = [header.join(",")];
   const sorted = [...state.transactions].sort((a, b) => a.date.localeCompare(b.date));
   for (const tx of sorted) {
@@ -274,6 +274,7 @@ export function transactionsToCsv(state: FinanceState, locale: "ru" | "en") {
       csvCell(name),
       String(tx.amount),
       csvCell(tx.note),
+      tx.intent ?? "",
     ];
     lines.push(cells.join(","));
   }
@@ -504,5 +505,91 @@ export function whatIfPreview(
     cafeKept,
     extraBill: input.extraBill,
     extraSave: input.extraSave,
+  };
+}
+
+export function expenseBetween(state: FinanceState, from: string, to: string) {
+  return (state.transactions ?? []).filter(
+    (tx) => tx.type === "expense" && tx.date >= from && tx.date <= to,
+  );
+}
+
+export function todayPace(state: FinanceState, today = todayIso()) {
+  const free = spendableUntilPayday(state, today);
+  const spent = todayExpense(state, today);
+  const planned = free.perDay != null && free.perDay > 0 ? free.perDay : 0;
+  const left = Math.round((planned - spent) * 100) / 100;
+  return { planned, spent, left, over: planned > 0 && spent > planned };
+}
+
+export function untilFriday(state: FinanceState, today = todayIso()) {
+  const friday = thisFridayIso(today);
+  const days = Math.max(1, daysBetween(today, friday) + 1);
+  const free = spendableUntilPayday(state, today);
+  const raw = free.perDay != null && free.perDay > 0 ? free.perDay * days : 0;
+  const amount = Math.round(Math.min(Math.max(raw, 0), Math.max(free.spendable, 0)) * 100) / 100;
+  return { friday, days, amount };
+}
+
+export function wantNeedTotals(state: FinanceState) {
+  const expenses = (state.transactions ?? []).filter((tx) => tx.type === "expense");
+  let want = 0;
+  let need = 0;
+  let other = 0;
+  for (const tx of expenses) {
+    if (tx.intent === "want") want += tx.amount;
+    else if (tx.intent === "need") need += tx.amount;
+    else other += tx.amount;
+  }
+  const tagged = want + need;
+  return {
+    want,
+    need,
+    other,
+    tagged,
+    wantShare: tagged > 0 ? Math.round((want / tagged) * 100) : null,
+  };
+}
+
+export function reserveScenes(state: FinanceState, today = todayIso()) {
+  const cushion = cushionDays(state, today);
+  const rent =
+    (state.recurrings ?? []).find((item) => item.type === "expense" && item.categoryId === "home")
+      ?.amount ?? 0;
+  const foodDaily =
+    averageCategoryDaily(state, "food", today) + averageCategoryDaily(state, "cafe", today);
+  const foodWeek = Math.round(foodDaily * 7 * 100) / 100;
+  return {
+    saved: cushion.saved,
+    days: cushion.days,
+    rent,
+    rentMonths: rent > 0 && cushion.saved > 0 ? Math.floor(cushion.saved / rent) : null,
+    foodWeek,
+    foodWeeks: foodWeek > 0 && cushion.saved > 0 ? Math.floor(cushion.saved / foodWeek) : null,
+  };
+}
+
+export function weekCompare(state: FinanceState, today = todayIso()) {
+  const thisWeek = isoWeekRange(today);
+  const lastWeek = isoWeekRange(addDaysIso(thisWeek.from, -1));
+  const now = expenseBetween(state, thisWeek.from, thisWeek.to);
+  const prev = expenseBetween(state, lastWeek.from, lastWeek.to);
+  const sum = (list: typeof now) => list.reduce((total, tx) => total + tx.amount, 0);
+  const cafe = (list: typeof now) =>
+    list.filter((tx) => tx.categoryId === "cafe").reduce((total, tx) => total + tx.amount, 0);
+  const want = (list: typeof now) =>
+    list.filter((tx) => tx.intent === "want").reduce((total, tx) => total + tx.amount, 0);
+  const nowTotal = sum(now);
+  const prevTotal = sum(prev);
+  const tagged = now.filter((tx) => tx.intent);
+  const taggedSum = sum(tagged);
+  return {
+    weekKey: isoWeekKey(today),
+    nowTotal,
+    prevTotal,
+    cafeNow: cafe(now),
+    cafePrev: cafe(prev),
+    wantShare: taggedSum > 0 ? Math.round((want(now) / taggedSum) * 100) : null,
+    hasPrev: prev.length > 0,
   };
 }

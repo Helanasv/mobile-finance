@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { ReserveScenes } from "@/components/finance/reserve-scenes";
 import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,8 @@ export function GoalsScreen() {
         <h1 className="font-display text-3xl font-medium tracking-tight">{t.goals}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t.goalsHint}</p>
       </header>
+
+      <ReserveScenes />
 
       <form
         className="space-y-3 rounded-[1.6rem] border border-amber-200/15 bg-card p-4"

@@ -1,5 +1,5 @@
 import type { Category, FinanceState, Goal, Recurring, Transaction } from "@/lib/types";
-import { todayIso } from "@/lib/format";
+import { addDaysIso, todayIso } from "@/lib/format";
 
 export const DEFAULT_CATEGORIES: Category[] = [
   { id: "salary", name: "Зарплата", type: "income", icon: "wallet", color: "#34d399" },
@@ -59,6 +59,7 @@ export function createSeedTransactions(): Transaction[] {
       note: "Аренда квартиры",
       date: monthDay(1),
       recurringId: "r1",
+      intent: "need",
     },
     {
       id: "t3",
@@ -67,6 +68,7 @@ export function createSeedTransactions(): Transaction[] {
       amount: 4680,
       note: "Перекрёсток",
       date: monthDay(2),
+      intent: "need",
     },
     {
       id: "t4",
@@ -75,6 +77,7 @@ export function createSeedTransactions(): Transaction[] {
       amount: 740,
       note: "Кофе и круассан",
       date: today,
+      intent: "want",
     },
     {
       id: "t5",
@@ -83,6 +86,7 @@ export function createSeedTransactions(): Transaction[] {
       amount: 2300,
       note: "Тройка на месяц",
       date: monthDay(1),
+      intent: "need",
     },
     {
       id: "t6",
@@ -91,6 +95,7 @@ export function createSeedTransactions(): Transaction[] {
       amount: 399,
       note: "Музыка",
       date: monthDay(2),
+      intent: "need",
     },
     {
       id: "t7",
@@ -99,6 +104,7 @@ export function createSeedTransactions(): Transaction[] {
       amount: 3190,
       note: "Кроссовки со скидкой",
       date: monthDay(2),
+      intent: "want",
     },
     {
       id: "t8",
@@ -115,6 +121,7 @@ export function createSeedTransactions(): Transaction[] {
       amount: 1200,
       note: "Кино",
       date: monthDay(1),
+      intent: "want",
     },
     {
       id: "t10",
@@ -123,6 +130,7 @@ export function createSeedTransactions(): Transaction[] {
       amount: 2100,
       note: "Аптека",
       date: monthDay(1),
+      intent: "need",
     },
     {
       id: "t11",
@@ -131,6 +139,7 @@ export function createSeedTransactions(): Transaction[] {
       amount: 3900,
       note: "Продукты",
       date: lastMonthDay(12),
+      intent: "need",
     },
     {
       id: "t12",
@@ -139,6 +148,25 @@ export function createSeedTransactions(): Transaction[] {
       amount: 1200,
       note: "Ужин",
       date: lastMonthDay(18),
+      intent: "want",
+    },
+    {
+      id: "t13",
+      type: "expense",
+      categoryId: "cafe",
+      amount: 2100,
+      note: "Кофе с коллегами",
+      date: addDaysIso(today, -8),
+      intent: "want",
+    },
+    {
+      id: "t14",
+      type: "expense",
+      categoryId: "food",
+      amount: 3200,
+      note: "Продукты",
+      date: addDaysIso(today, -9),
+      intent: "need",
     },
   ];
 }
@@ -172,5 +200,6 @@ export function createInitialState(): FinanceState {
     monthLimit: 0,
     paydayDay: 1,
     briefingDismissedOn: null,
+    weeklyNoteDismissedWeek: null,
   };
 }

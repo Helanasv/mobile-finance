@@ -13,6 +13,8 @@ export type Category = {
   color: string;
 };
 
+export type SpendIntent = "want" | "need";
+
 export type Transaction = {
   id: string;
   type: TransactionType;
@@ -21,6 +23,7 @@ export type Transaction = {
   note: string;
   date: string;
   recurringId?: string;
+  intent?: SpendIntent;
 };
 
 export type Goal = {
@@ -57,4 +60,5 @@ export type FinanceState = {
   monthLimit: number;
   paydayDay: number;
   briefingDismissedOn: string | null;
+  weeklyNoteDismissedWeek: string | null;
 };

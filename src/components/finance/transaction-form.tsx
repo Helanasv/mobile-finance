@@ -16,18 +16,20 @@ import {
 import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { CategoryIcon } from "@/components/finance/category-icon";
 import { currencyMeta } from "@/lib/currency";
-import { todayIso } from "@/lib/format";
+import { formatMoney, todayIso } from "@/lib/format";
+import { todayPace } from "@/lib/finance";
 import { categoryLabel } from "@/lib/i18n";
-import type { Transaction, TransactionType } from "@/lib/types";
+import type { SpendIntent, Transaction, TransactionType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initial?: Transaction | null;
+  fromTodayNorm?: boolean;
 };
 
-export function TransactionForm({ open, onOpenChange, initial }: Props) {
+export function TransactionForm({ open, onOpenChange, initial, fromTodayNorm }: Props) {
   const { state, addTransaction, updateTransaction, deleteTransaction } = useFinance();
   const t = useT();
   const locale = useLocale();
@@ -41,6 +43,7 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
   );
   const [note, setNote] = useState(initial?.note ?? "");
   const [date, setDate] = useState(initial?.date ?? todayIso());
+  const [intent, setIntent] = useState<SpendIntent>(initial?.intent ?? "need");
 
   const categories = useMemo(
     () => state.categories.filter((category) => category.type === type),
@@ -51,6 +54,7 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
     setType(next);
     const first = state.categories.find((category) => category.type === next);
     setCategoryId(first?.id ?? "");
+    if (next === "expense") setIntent("need");
   }
 
   function handleOpen(next: boolean) {
@@ -65,6 +69,7 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
       );
       setNote(initial?.note ?? "");
       setDate(initial?.date ?? todayIso());
+      setIntent(initial?.intent ?? "need");
     }
     onOpenChange(next);
   }
@@ -81,23 +86,38 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
       return;
     }
 
-    const payload = {
+    const payload: Omit<Transaction, "id"> = {
       type,
       categoryId,
       amount: Math.round(value * 100) / 100,
       note: note.trim(),
       date,
+      ...(type === "expense" ? { intent } : {}),
     };
 
+    const pace = todayPace(state);
+    const hitsToday = type === "expense" && date === todayIso();
+
     if (initial) {
-      updateTransaction({ ...payload, id: initial.id });
+      updateTransaction({ ...payload, id: initial.id, recurringId: initial.recurringId });
       toast.success(t.txUpdated);
     } else {
       addTransaction(payload);
-      toast.success(type === "income" ? t.incomeSaved : t.expenseSaved);
+      if (hitsToday && pace.planned > 0 && payload.amount > pace.left) {
+        toast.success(t.ateTomorrow);
+      } else {
+        toast.success(
+          type === "income"
+            ? t.incomeSaved
+            : hitsToday && pace.planned > 0
+              ? t.stillInToday
+              : t.expenseSaved,
+        );
+      }
       setAmount("");
       setNote("");
       setDate(todayIso());
+      setIntent("need");
     }
     onOpenChange(false);
   }
@@ -109,8 +129,14 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
         className="mx-auto max-h-[92svh] w-full max-w-md overflow-y-auto rounded-t-3xl border-x px-5 pb-8"
       >
         <SheetHeader className="px-0 text-left">
-          <SheetTitle>{initial ? t.editTx : t.newTx}</SheetTitle>
-          <SheetDescription>{t.txStoredLocal}</SheetDescription>
+          <SheetTitle>
+            {initial ? t.editTx : fromTodayNorm ? t.spendFromToday : t.newTx}
+          </SheetTitle>
+          <SheetDescription>
+            {fromTodayNorm && !initial && todayPace(state).planned > 0
+              ? t.todayNormLeft(formatMoney(Math.max(todayPace(state).left, 0), state.currency, locale))
+              : t.txStoredLocal}
+          </SheetDescription>
         </SheetHeader>
 
         <form className="flex flex-col gap-5" onSubmit={submit}>
@@ -182,6 +208,34 @@ export function TransactionForm({ open, onOpenChange, initial }: Props) {
               ))}
             </div>
           </div>
+
+          {type === "expense" ? (
+            <div className="space-y-2">
+              <Label>{t.intentHint}</Label>
+              <div className="grid grid-cols-2 gap-2 rounded-2xl bg-muted p-1">
+                <button
+                  type="button"
+                  className={cn(
+                    "h-10 rounded-xl text-sm font-medium",
+                    intent === "need" ? "bg-background shadow-sm" : "text-muted-foreground",
+                  )}
+                  onClick={() => setIntent("need")}
+                >
+                  {t.intentNeed}
+                </button>
+                <button
+                  type="button"
+                  className={cn(
+                    "h-10 rounded-xl text-sm font-medium",
+                    intent === "want" ? "bg-background shadow-sm" : "text-muted-foreground",
+                  )}
+                  onClick={() => setIntent("want")}
+                >
+                  {t.intentWant}
+                </button>
+              </div>
+            </div>
+          ) : null}
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">

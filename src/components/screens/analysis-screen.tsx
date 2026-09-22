@@ -15,6 +15,7 @@ import {
   forecastNextMonth,
   monthlyBreakdown,
   transactionDateRange,
+  wantNeedTotals,
 } from "@/lib/finance";
 import { formatMoney, formatMonthTitle, formatShortDate, monthKey } from "@/lib/format";
 import { categoryLabel } from "@/lib/i18n";
@@ -33,6 +34,7 @@ export function AnalysisScreen() {
   const insights = useMemo(() => allTimeInsights(state), [state]);
   const comparison = useMemo(() => compareMonths(state, monthKey()), [state]);
   const leftover = totals.income - totals.expense;
+  const wantNeed = useMemo(() => wantNeedTotals(state), [state]);
   const maxSpend = spend[0]?.amount ?? 0;
   const maxMonth = Math.max(1, ...months.map((row) => Math.max(row.income, row.expense)));
 
@@ -93,6 +95,33 @@ export function AnalysisScreen() {
               </div>
             </div>
           </section>
+
+          {wantNeed.tagged > 0 ? (
+            <section className="rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
+              <p className="text-sm font-medium">{t.wantNeedTitle}</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {wantNeed.wantShare != null ? t.wantOfTagged(wantNeed.wantShare) : t.wantNeedEmpty}
+              </p>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full bg-primary"
+                  style={{ width: `${wantNeed.wantShare ?? 0}%` }}
+                />
+              </div>
+              <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+                <span>
+                  {t.intentWant}: {formatMoney(wantNeed.want, state.currency, locale)}
+                </span>
+                <span>
+                  {t.intentNeed}: {formatMoney(wantNeed.need, state.currency, locale)}
+                </span>
+              </div>
+            </section>
+          ) : (
+            <section className="rounded-[1.6rem] border border-dashed px-4 py-4">
+              <p className="text-sm text-muted-foreground">{t.wantNeedEmpty}</p>
+            </section>
+          )}
 
           <section className="rounded-[1.6rem] border border-amber-200/15 bg-card p-4">
             <p className="text-sm font-medium">{t.compareTitle}</p>

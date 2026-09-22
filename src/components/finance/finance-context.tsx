@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, u
 
 import { createInitialState } from "@/lib/defaults";
 import { clampPaydayDay, cushionGoal, withDueRecurring } from "@/lib/finance";
-import { todayIso } from "@/lib/format";
+import { isoWeekKey, todayIso } from "@/lib/format";
 import {
   getFinanceSnapshot,
   getServerFinanceSnapshot,
@@ -38,6 +38,8 @@ type FinanceContextValue = {
   setPaydayDay: (day: number) => void;
   dismissBriefing: () => void;
   restoreBriefing: () => void;
+  dismissWeeklyNote: () => void;
+  restoreWeeklyNote: () => void;
   addToCushion: (amount: number) => void;
   completeSetup: (locale: Locale, currency: Currency) => void;
   resetDemo: () => void;
@@ -141,6 +143,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setFinanceState((current) => ({ ...current, briefingDismissedOn: null }));
   }, []);
 
+  const dismissWeeklyNote = useCallback(() => {
+    setFinanceState((current) => ({
+      ...current,
+      weeklyNoteDismissedWeek: isoWeekKey(todayIso()),
+    }));
+  }, []);
+
+  const restoreWeeklyNote = useCallback(() => {
+    setFinanceState((current) => ({ ...current, weeklyNoteDismissedWeek: null }));
+  }, []);
+
   const addToCushion = useCallback((amount: number) => {
     const value = Math.round(amount * 100) / 100;
     if (!Number.isFinite(value) || value <= 0) return;
@@ -185,6 +198,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       displayName: current.displayName,
       paydayDay: current.paydayDay,
       briefingDismissedOn: current.briefingDismissedOn,
+      weeklyNoteDismissedWeek: current.weeklyNoteDismissedWeek,
     }));
   }, []);
 
@@ -196,6 +210,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       displayName: current.displayName,
       paydayDay: current.paydayDay,
       briefingDismissedOn: current.briefingDismissedOn,
+      weeklyNoteDismissedWeek: current.weeklyNoteDismissedWeek,
       categories: createInitialState().categories,
       transactions: [],
       budgets: [],
@@ -223,6 +238,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setPaydayDay,
       dismissBriefing,
       restoreBriefing,
+      dismissWeeklyNote,
+      restoreWeeklyNote,
       addToCushion,
       completeSetup,
       resetDemo,
@@ -245,6 +262,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setPaydayDay,
       dismissBriefing,
       restoreBriefing,
+      dismissWeeklyNote,
+      restoreWeeklyNote,
       addToCushion,
       completeSetup,
       resetDemo,

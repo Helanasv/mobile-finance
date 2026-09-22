@@ -37,6 +37,9 @@ export function TransactionRow({
         </span>
         <span className="block truncate text-sm text-muted-foreground">
           {transaction.note || t.noNote}
+          {transaction.type === "expense" && transaction.intent
+            ? ` · ${transaction.intent === "want" ? t.intentWant : t.intentNeed}`
+            : ""}
         </span>
       </span>
       <span
