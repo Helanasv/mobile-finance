@@ -33,6 +33,8 @@ export function loadState(): FinanceState {
       monthLimit: 0,
       budgets: [],
       paydayDay: clampPayday(parsed.paydayDay),
+      briefingDismissedOn:
+        typeof parsed.briefingDismissedOn === "string" ? parsed.briefingDismissedOn : null,
     };
   } catch {
     return createInitialState();

@@ -420,3 +420,89 @@ export function cushionDays(state: FinanceState, today = todayIso()): CushionVie
     days: daysOfHabit(saved, dailySpend),
   };
 }
+
+export function todayExpense(state: FinanceState, today = todayIso()) {
+  return (state.transactions ?? [])
+    .filter((tx) => tx.type === "expense" && tx.date === today)
+    .reduce((sum, tx) => sum + tx.amount, 0);
+}
+
+export function averageCategoryDaily(
+  state: FinanceState,
+  categoryId: string,
+  today = todayIso(),
+) {
+  const from = addDaysIso(today, -29);
+  const expenses = (state.transactions ?? []).filter(
+    (tx) =>
+      tx.type === "expense" &&
+      tx.categoryId === categoryId &&
+      tx.date >= from &&
+      tx.date <= today,
+  );
+  if (expenses.length === 0) return 0;
+  const sum = expenses.reduce((total, tx) => total + tx.amount, 0);
+  const earliest = expenses.reduce((min, tx) => (tx.date < min ? tx.date : min), today);
+  const span = Math.max(1, daysBetween(earliest, today) + 1);
+  return Math.round((sum / span) * 100) / 100;
+}
+
+export function typicalSubscriptionAmount(state: FinanceState) {
+  const subs = (state.transactions ?? [])
+    .filter((tx) => tx.type === "expense" && tx.categoryId === "subs")
+    .sort((a, b) => b.date.localeCompare(a.date));
+  if (subs.length === 0) return 399;
+  return subs[0].amount;
+}
+
+export type WhatIfInput = {
+  skipCafe: boolean;
+  extraBill: number;
+  extraSave: number;
+};
+
+export type WhatIfPreview = {
+  spendable: number;
+  perDay: number | null;
+  daysLeft: number;
+  cushionDays: number | null;
+  cafeKept: number;
+  extraBill: number;
+  extraSave: number;
+};
+
+export function whatIfPreview(
+  state: FinanceState,
+  input: WhatIfInput,
+  today = todayIso(),
+): WhatIfPreview {
+  const base = spendableUntilPayday(state, today);
+  const cushion = cushionDays(state, today);
+  const cafeDaily = averageCategoryDaily(state, "cafe", today);
+  const cafeKept =
+    input.skipCafe && cafeDaily > 0
+      ? Math.round(cafeDaily * Math.max(base.daysLeft, 1) * 100) / 100
+      : 0;
+
+  let spendable = base.spendable + cafeKept - input.extraBill - input.extraSave;
+  spendable = Math.round(spendable * 100) / 100;
+
+  let dailyHabit = cushion.dailySpend;
+  if (input.skipCafe && dailyHabit != null && cafeDaily > 0) {
+    dailyHabit = Math.max(Math.round((dailyHabit - cafeDaily) * 100) / 100, 1);
+  }
+
+  const saved = cushion.saved + input.extraSave;
+  const perDay =
+    base.daysLeft > 0 ? Math.round((spendable / base.daysLeft) * 100) / 100 : spendable;
+
+  return {
+    spendable,
+    perDay,
+    daysLeft: base.daysLeft,
+    cushionDays: daysOfHabit(saved, dailyHabit),
+    cafeKept,
+    extraBill: input.extraBill,
+    extraSave: input.extraSave,
+  };
+}

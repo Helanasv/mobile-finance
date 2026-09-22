@@ -56,4 +56,5 @@ export type FinanceState = {
   recurrings: Recurring[];
   monthLimit: number;
   paydayDay: number;
+  briefingDismissedOn: string | null;
 };

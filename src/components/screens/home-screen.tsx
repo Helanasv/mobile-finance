@@ -4,6 +4,8 @@ import { ChartColumn, ChevronLeft, ChevronRight, PiggyBank, Settings } from "luc
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { DayBriefing } from "@/components/finance/day-briefing";
+import { WhatIfCard } from "@/components/finance/what-if";
 import { useEditTransaction } from "@/components/finance/app-shell";
 import { useFinance, useLocale, useT } from "@/components/finance/finance-context";
 import { TransactionRow } from "@/components/finance/transaction-row";
@@ -94,6 +96,8 @@ export function HomeScreen() {
         </div>
       </header>
 
+      <DayBriefing />
+
       <section className="relative shrink-0 rounded-[1.75rem] border border-amber-200/25 bg-[#2a231c] p-5 text-[#f6e7c8]">
         <div className="absolute top-0 left-0 h-full w-1.5 rounded-l-[1.75rem] bg-primary" />
         <div className="flex items-start justify-between gap-3 pl-2">
@@ -155,6 +159,8 @@ export function HomeScreen() {
           {t.freeChangePayday}
         </Link>
       </section>
+
+      <WhatIfCard />
 
       <Link
         href="/goals"

@@ -3,7 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { createInitialState } from "@/lib/defaults";
-import { clampPaydayDay, withDueRecurring } from "@/lib/finance";
+import { clampPaydayDay, cushionGoal, withDueRecurring } from "@/lib/finance";
+import { todayIso } from "@/lib/format";
 import {
   getFinanceSnapshot,
   getServerFinanceSnapshot,
@@ -35,6 +36,9 @@ type FinanceContextValue = {
   setLocale: (locale: Locale) => void;
   setDisplayName: (displayName: string) => void;
   setPaydayDay: (day: number) => void;
+  dismissBriefing: () => void;
+  restoreBriefing: () => void;
+  addToCushion: (amount: number) => void;
   completeSetup: (locale: Locale, currency: Currency) => void;
   resetDemo: () => void;
   clearAll: () => void;
@@ -129,6 +133,45 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setFinanceState((current) => ({ ...current, paydayDay: clampPaydayDay(day) }));
   }, []);
 
+  const dismissBriefing = useCallback(() => {
+    setFinanceState((current) => ({ ...current, briefingDismissedOn: todayIso() }));
+  }, []);
+
+  const restoreBriefing = useCallback(() => {
+    setFinanceState((current) => ({ ...current, briefingDismissedOn: null }));
+  }, []);
+
+  const addToCushion = useCallback((amount: number) => {
+    const value = Math.round(amount * 100) / 100;
+    if (!Number.isFinite(value) || value <= 0) return;
+    setFinanceState((current) => {
+      const existing = cushionGoal(current);
+      if (!existing) {
+        const name = current.locale === "en" ? "Cushion" : "Подушка";
+        return {
+          ...current,
+          goals: [
+            {
+              id: crypto.randomUUID(),
+              name,
+              target: Math.max(100000, Math.round(value * 5)),
+              saved: value,
+            },
+            ...current.goals,
+          ],
+        };
+      }
+      return {
+        ...current,
+        goals: current.goals.map((goal) =>
+          goal.id === existing.id
+            ? { ...goal, saved: Math.round((goal.saved + value) * 100) / 100 }
+            : goal,
+        ),
+      };
+    });
+  }, []);
+
   const completeSetup = useCallback((locale: Locale, currency: Currency) => {
     setFinanceState((current) => ({ ...current, locale, currency, setupComplete: true }));
   }, []);
@@ -141,6 +184,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setupComplete: current.setupComplete,
       displayName: current.displayName,
       paydayDay: current.paydayDay,
+      briefingDismissedOn: current.briefingDismissedOn,
     }));
   }, []);
 
@@ -151,6 +195,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setupComplete: current.setupComplete,
       displayName: current.displayName,
       paydayDay: current.paydayDay,
+      briefingDismissedOn: current.briefingDismissedOn,
       categories: createInitialState().categories,
       transactions: [],
       budgets: [],
@@ -176,6 +221,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setLocale,
       setDisplayName,
       setPaydayDay,
+      dismissBriefing,
+      restoreBriefing,
+      addToCushion,
       completeSetup,
       resetDemo,
       clearAll,
@@ -195,6 +243,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setLocale,
       setDisplayName,
       setPaydayDay,
+      dismissBriefing,
+      restoreBriefing,
+      addToCushion,
       completeSetup,
       resetDemo,
       clearAll,

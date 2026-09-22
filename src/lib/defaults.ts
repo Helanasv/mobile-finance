@@ -171,5 +171,6 @@ export function createInitialState(): FinanceState {
     recurrings: DEFAULT_RECURRINGS,
     monthLimit: 0,
     paydayDay: 1,
+    briefingDismissedOn: null,
   };
 }
