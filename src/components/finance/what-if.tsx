@@ -30,54 +30,84 @@ export function WhatIfCard() {
   const subAmount = useMemo(() => typicalSubscriptionAmount(state), [state]);
   const maxSave = Math.max(0, Math.floor(base.spendable));
 
-  const input = {
-    skipCafe: fork === "noCafe",
-    extraBill: fork === "sub" ? subAmount : 0,
-    extraSave: fork === "save" ? saveDraft : 0,
-  };
   const preview = useMemo(
-    () => whatIfPreview(state, input),
-    [state, input.skipCafe, input.extraBill, input.extraSave],
+    () =>
+      whatIfPreview(state, {
+        skipCafe: fork === "noCafe",
+        extraBill: fork === "sub" ? subAmount : 0,
+        extraSave: fork === "save" ? saveDraft : 0,
+      }),
+    [state, fork, subAmount, saveDraft],
   );
 
   const changed = fork !== "off";
+  const story =
+    fork === "noCafe"
+      ? t.whatIfNoCafeWhy
+      : fork === "sub"
+        ? t.whatIfSubWhy
+        : fork === "save"
+          ? t.whatIfSaveWhy
+          : t.whatIfOffWhy;
+
+  const options: { id: Fork; label: string; why: string; disabled?: boolean }[] = [
+    { id: "off", label: t.whatIfOff, why: t.whatIfOffWhy },
+    {
+      id: "noCafe",
+      label: t.whatIfNoCafe,
+      why: cafeDaily <= 0 ? t.whatIfCafeMissing : t.whatIfNoCafeWhy,
+      disabled: cafeDaily <= 0,
+    },
+    { id: "sub", label: t.whatIfSub, why: t.whatIfSubWhy },
+    {
+      id: "save",
+      label: t.whatIfSave,
+      why: maxSave < 100 ? t.whatIfNoFreeSave : t.whatIfSaveWhy,
+      disabled: maxSave < 100,
+    },
+  ];
 
   return (
     <section className="rounded-[1.6rem] border border-amber-200/20 bg-card p-4">
       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
         {t.whatIfTitle}
       </p>
-      <p className="mt-1 text-sm text-muted-foreground">{t.whatIfHint}</p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {(
-          [
-            { id: "off" as const, label: t.whatIfOff },
-            { id: "noCafe" as const, label: t.whatIfNoCafe, disabled: cafeDaily <= 0 },
-            { id: "sub" as const, label: t.whatIfSub },
-            { id: "save" as const, label: t.whatIfSave, disabled: maxSave < 100 },
-          ] as const
-        ).map((chip) => (
-          <button
-            key={chip.id}
-            type="button"
-            disabled={"disabled" in chip ? chip.disabled : false}
-            onClick={() => {
-              setFork(chip.id);
-              if (chip.id === "save" && saveDraft === 0) {
-                setSaveDraft(Math.min(maxSave, 3000) || maxSave);
-              }
-            }}
-            className={cn(
-              "min-h-10 rounded-full px-3 text-sm font-medium",
-              fork === chip.id
-                ? "bg-foreground text-background"
-                : "bg-muted text-muted-foreground",
-              "disabled" in chip && chip.disabled && "opacity-40",
-            )}
-          >
-            {chip.label}
-          </button>
-        ))}
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.whatIfHint}</p>
+
+      <div className="mt-4 space-y-2">
+        {options.map((option) => {
+          const selected = fork === option.id;
+          return (
+            <button
+              key={option.id}
+              type="button"
+              disabled={option.disabled}
+              onClick={() => {
+                setFork(option.id);
+                if (option.id === "save" && saveDraft === 0) {
+                  setSaveDraft(Math.min(maxSave, 3000) || maxSave);
+                }
+              }}
+              className={cn(
+                "w-full rounded-2xl border px-3 py-3 text-left",
+                selected
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border bg-background",
+                option.disabled && "opacity-45",
+              )}
+            >
+              <p className="text-sm font-medium">{option.label}</p>
+              <p
+                className={cn(
+                  "mt-1 text-xs leading-relaxed",
+                  selected ? "text-background/75" : "text-muted-foreground",
+                )}
+              >
+                {option.why}
+              </p>
+            </button>
+          );
+        })}
       </div>
 
       {fork === "save" && maxSave >= 100 ? (
@@ -114,6 +144,8 @@ export function WhatIfCard() {
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Metric
           label={t.whatIfPerDay}
+          nowLabel={t.whatIfNow}
+          thenLabel={t.whatIfThen}
           before={
             base.perDay != null && base.perDay > 0
               ? formatMoney(base.perDay, state.currency, locale)
@@ -128,31 +160,34 @@ export function WhatIfCard() {
         />
         <Metric
           label={t.whatIfCushion}
-          before={cushion.days != null ? t.cushionDaysLine(cushion.days) : "—"}
+          nowLabel={t.whatIfNow}
+          thenLabel={t.whatIfThen}
+          before={cushion.days != null ? t.daysLabel(cushion.days) : "—"}
           after={
-            preview.cushionDays != null ? t.cushionDaysLine(preview.cushionDays) : "—"
+            preview.cushionDays != null ? t.daysLabel(preview.cushionDays) : "—"
           }
           changed={changed}
         />
       </div>
 
-      {!changed ? (
-        <p className="mt-3 text-xs text-muted-foreground">{t.whatIfSame}</p>
-      ) : null}
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{story}</p>
 
       {fork === "save" && saveDraft > 0 ? (
-        <Button
-          type="button"
-          className="mt-4 h-11 w-full rounded-xl"
-          onClick={() => {
-            addToCushion(saveDraft);
-            setFork("off");
-            setSaveDraft(0);
-            toast.success(t.briefingSaved);
-          }}
-        >
-          {t.whatIfApplySave}
-        </Button>
+        <div className="mt-4 space-y-2">
+          <p className="text-xs text-muted-foreground">{t.whatIfApplyHint}</p>
+          <Button
+            type="button"
+            className="h-11 w-full rounded-xl"
+            onClick={() => {
+              addToCushion(saveDraft);
+              setFork("off");
+              setSaveDraft(0);
+              toast.success(t.briefingSaved);
+            }}
+          >
+            {t.whatIfApplySave}
+          </Button>
+        </div>
       ) : null}
     </section>
   );
@@ -160,11 +195,15 @@ export function WhatIfCard() {
 
 function Metric({
   label,
+  nowLabel,
+  thenLabel,
   before,
   after,
   changed,
 }: {
   label: string;
+  nowLabel: string;
+  thenLabel: string;
   before: string;
   after: string;
   changed: boolean;
@@ -172,14 +211,18 @@ function Metric({
   return (
     <div className="rounded-2xl bg-muted/50 p-3">
       <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-2 text-[10px] uppercase tracking-wide text-muted-foreground">
+        {nowLabel}
+      </p>
+      <p className={cn("text-sm font-semibold leading-snug", changed && "text-muted-foreground")}>
+        {before}
+      </p>
       {changed ? (
         <>
-          <p className="mt-1 text-xs text-muted-foreground line-through">{before}</p>
+          <p className="mt-2 text-[10px] uppercase tracking-wide text-primary">{thenLabel}</p>
           <p className="text-sm font-semibold leading-snug">{after}</p>
         </>
-      ) : (
-        <p className="mt-1 text-sm font-semibold leading-snug">{before}</p>
-      )}
+      ) : null}
     </div>
   );
 }
