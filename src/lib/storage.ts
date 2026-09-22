@@ -28,7 +28,13 @@ export function loadState(): FinanceState {
       displayName: typeof parsed.displayName === "string" ? parsed.displayName : "",
       categories: parsed.categories,
       transactions: parsed.transactions,
-      goals: Array.isArray(parsed.goals) ? parsed.goals : [],
+      goals: Array.isArray(parsed.goals)
+        ? parsed.goals.map((goal) =>
+            goal.name === "Подушка" || goal.name === "Cushion"
+              ? { ...goal, name: parsed.locale === "en" ? "Reserve" : "Запас" }
+              : goal,
+          )
+        : [],
       recurrings: Array.isArray(parsed.recurrings) ? parsed.recurrings : [],
       monthLimit: 0,
       budgets: [],
